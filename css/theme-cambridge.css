@@ -1,0 +1,237 @@
+/* ============================================================
+   Cambridge-blue theme for reveal.js — Beamer (CambridgeUS) look
+   Loaded AFTER dist/theme/white.css
+   ============================================================ */
+
+/* ---- Latin Modern Sans (the Beamer font), vendored offline ---- */
+@font-face{ font-family:'LM Sans'; font-weight:400; font-style:normal;
+  src:url('../vendor/fonts/lmsans-regular.woff') format('woff'); font-display:swap; }
+@font-face{ font-family:'LM Sans'; font-weight:700; font-style:normal;
+  src:url('../vendor/fonts/lmsans-bold.woff') format('woff'); font-display:swap; }
+@font-face{ font-family:'LM Sans'; font-weight:400; font-style:italic;
+  src:url('../vendor/fonts/lmsans-oblique.woff') format('woff'); font-display:swap; }
+@font-face{ font-family:'LM Sans'; font-weight:700; font-style:italic;
+  src:url('../vendor/fonts/lmsans-boldoblique.woff') format('woff'); font-display:swap; }
+
+:root{
+  --camb:#003E74;
+  --camb-mid:#15558f;
+  --camb-deep:#0c4a80;
+  --camb-light:#6AADE4;
+  --gold:#B48C3C;
+  --mukara:#4682B4;
+  --deep:#006E5A;
+  --mag:#A03C64;
+  --ink:#1e2b38;
+  --muted:#5b6b7a;
+  --line:#dfe4ea;
+  --soft:#f3f6f9;
+  --hl-h:34px;     /* headline height */
+  --fl-h:26px;     /* footline height */
+}
+
+.reveal{
+  font-family:'LM Sans',-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink);
+  font-size:26px;
+}
+.reveal .slides{ text-align:left; }
+.reveal .slides section{ line-height:1.35; }
+
+/* ---- headings ---- */
+.reveal h1,.reveal h2,.reveal h3,.reveal h4{
+  color:var(--camb); text-transform:none; font-weight:700;
+  letter-spacing:-0.01em; line-height:1.12; margin:0 0 .45em 0;
+}
+.reveal h1{ font-size:1.9em; }
+.reveal h2{ font-size:1.35em; }
+.reveal h3{ font-size:1.1em; }
+/* frametitle: slide h2 with the Beamer rule */
+.reveal .slides section:not(.plain):not(.section-divider) > h2:first-child,
+.reveal h2.ruled{
+  padding-bottom:.22em; border-bottom:3px solid var(--camb); margin-bottom:.55em;
+}
+
+.reveal a{ color:var(--mukara); text-decoration:none; border-bottom:1px solid var(--line); }
+.reveal strong{ color:var(--camb); }
+.reveal em{ color:var(--muted); font-style:italic; }
+.reveal .muted{ color:var(--muted); }
+.reveal small{ color:var(--muted); }
+
+/* ---- lists ---- */
+.reveal ul{ list-style:none; margin-left:0; }
+.reveal ul li{ position:relative; padding-left:1.05em; margin:.26em 0; }
+.reveal ul li::before{ content:""; position:absolute; left:.05em; top:.52em;
+  width:.4em; height:.4em; border-radius:50%; background:var(--camb); }
+.reveal ol{ margin-left:1.1em; }
+.reveal ol li{ margin:.26em 0; }
+.reveal ol li::marker{ color:var(--camb); font-weight:700; }
+
+/* ============================================================
+   Plain slides (title / thank-you): centred, no chrome
+   ============================================================ */
+.reveal .plain{ text-align:center; }
+.reveal .title-box{
+  display:inline-block; background:#fff; border-radius:14px; padding:.7em 1.4em;
+  box-shadow:0 10px 30px rgba(0,0,0,.18); margin-bottom:.9em;
+}
+.reveal .title-box h1{ margin:0; font-size:1.8em; }
+.reveal .plain .subtitle{ color:var(--muted); font-size:.95em; margin:.2em 0 0; }
+.reveal .plain .byline{ margin-top:1.1em; font-size:.7em; color:var(--ink); line-height:1.55; }
+.reveal .plain .affil{ color:var(--muted); }
+
+/* ---- section-divider slides: blue background, big section title ---- */
+.reveal .section-divider{ text-align:center; }
+.reveal .section-divider .kicker{ color:var(--camb-light); font-size:.6em; letter-spacing:.18em;
+  text-transform:uppercase; margin-bottom:.4em; }
+.reveal .section-divider h2{ color:#fff; font-size:1.9em; border:none; margin:0; }
+
+/* ---- layout helpers ---- */
+.reveal .cols{ display:flex; gap:1.1em; align-items:flex-start; }
+.reveal .cols > *{ flex:1 1 0; min-width:0; }
+.reveal .col-40{ flex:0 0 40%; } .reveal .col-60{ flex:0 0 60%; }
+.reveal .center{ text-align:center; } .reveal .vh{ display:flex; align-items:center; justify-content:center; }
+
+/* ---- cards / callouts ---- */
+.reveal .card{ background:var(--soft); border:1px solid var(--line); border-radius:12px; padding:.7em .9em; }
+.reveal .note{ border-left:4px solid var(--camb); background:var(--soft); border-radius:0 10px 10px 0; padding:.55em .8em; }
+.reveal .alert{ border-left:4px solid var(--mag); background:#fbeef2; border-radius:0 10px 10px 0; padding:.55em .8em; }
+.reveal .ok{ border-left:4px solid var(--deep); background:#eaf5f1; border-radius:0 10px 10px 0; padding:.55em .8em; }
+
+/* ---- badges & kbd ---- */
+.reveal .badge{ display:inline-block; padding:.06em .55em; border-radius:999px; font-size:.6em; font-weight:700; color:#fff; vertical-align:middle; }
+.reveal .badge.b-mukara{ background:var(--mukara); } .reveal .badge.b-deep{ background:var(--deep); } .reveal .badge.b-gold{ background:var(--gold); }
+.reveal kbd{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.66em; background:#fff;
+  border:1px solid #c7ced6; border-bottom-width:2px; border-radius:6px; padding:.08em .45em; color:var(--ink); }
+
+/* ---- tables / code / figures ---- */
+.reveal table{ border-collapse:collapse; font-size:.8em; }
+.reveal table th{ color:#fff; background:var(--camb); padding:.35em .7em; text-align:left; }
+.reveal table td{ padding:.32em .7em; border-bottom:1px solid var(--line); }
+.reveal table tr:nth-child(even) td{ background:var(--soft); }
+.reveal pre{ box-shadow:0 4px 18px rgba(0,0,0,.10); border-radius:10px; font-size:.5em; }
+.reveal :not(pre) > code{ background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:.05em .35em; font-size:.82em; color:var(--camb); }
+.reveal figure{ margin:0; }
+.reveal figure img{ border-radius:10px; box-shadow:0 6px 22px rgba(0,0,0,.14); }
+.reveal figcaption{ font-size:.58em; color:var(--muted); margin-top:.3em; }
+/* figure sizing helpers (slide space is ~960x700) */
+.reveal img.fig{ max-height:480px; max-width:100%; width:auto; }
+.reveal img.dia{ height:auto; max-width:100%; }
+.reveal img.fig-tall{ max-height:560px; max-width:100%; width:auto; }
+.reveal img.fig-wide{ width:100%; max-height:420px; object-fit:contain; }
+.reveal .num{ display:inline-block; background:var(--soft); border:1px solid var(--line);
+  border-radius:10px; padding:.15em .5em; margin:.1em; font-weight:700; color:var(--camb); }
+
+/* our footline shows the page number, so hide reveal's own chip */
+.reveal .slide-number{ display:none; }
+.reveal .controls{ color:var(--camb); }
+
+/* ============================================================
+   Beamer chrome: fixed headline (top) + footline (bottom)
+   populated by js/talk.js; hidden on plain / divider / overview
+   ============================================================ */
+#headline{
+  position:fixed; top:0; left:0; right:0; height:var(--hl-h); z-index:31;
+  display:flex; font-family:'LM Sans',sans-serif; overflow:hidden;
+}
+#headline .sec{ flex:1 1 auto; background:var(--camb-mid); color:#fff;
+  display:flex; align-items:center; padding:0 20px; font-size:15px; font-weight:700; }
+#headline .prog{ flex:0 0 26%; background:var(--camb); color:#cfe0ef;
+  display:flex; align-items:center; justify-content:flex-end; padding:0 18px; font-size:12px; letter-spacing:.03em; }
+
+#footline{
+  position:fixed; bottom:0; left:0; right:0; height:var(--fl-h); z-index:31;
+  display:flex; font-family:'LM Sans',sans-serif; overflow:hidden; font-size:12px;
+}
+#footline .cell{ display:flex; align-items:center; padding:0 16px; color:#e7eff7; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#footline .a{ flex:1 1 34%; background:var(--camb); }
+#footline .t{ flex:1 1 40%; background:var(--camb-mid); justify-content:center; }
+#footline .d{ flex:1 1 26%; background:var(--camb-deep); justify-content:flex-end; }
+
+#headline.hidden,#footline.hidden{ display:none; }
+
+/* keep centred content clear of the thin bars */
+.reveal .slides section:not(.plain):not(.section-divider){ padding:calc(var(--hl-h) + 6px) 8px calc(var(--fl-h) + 6px); }
+
+/* ============================================================
+   Floating buttons: PDF download + Play-narrated
+   ============================================================ */
+.floating-btn{ position:fixed; z-index:40; display:inline-flex; align-items:center; gap:.5em;
+  font-family:'LM Sans',sans-serif; font-size:16px; font-weight:700; padding:11px 18px; border-radius:999px;
+  cursor:pointer; text-decoration:none; box-shadow:0 6px 20px rgba(0,62,116,.28);
+  transition:transform .12s ease, box-shadow .12s ease, opacity .25s ease; border:none; }
+.floating-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(0,62,116,.35); }
+.floating-btn svg{ width:18px; height:18px; }
+#dlPdf{ right:26px; bottom:calc(var(--fl-h) + 22px); background:var(--camb); color:#fff; border-bottom:none; }
+#playNarrated{ top:44px; left:16px; background:#fff; color:var(--camb); border:2px solid var(--camb); font-size:14px; padding:8px 14px; }
+#playNarrated.playing{ background:var(--camb); color:#fff; }
+.floating-btn.hidden{ opacity:0; pointer-events:none; }
+
+/* ---- QR card ---- */
+.reveal .qr{ display:inline-flex; flex-direction:column; align-items:center; gap:.3em; background:#fff;
+  border:1px solid var(--line); border-radius:14px; padding:.7em; box-shadow:0 6px 22px rgba(0,0,0,.10); }
+.reveal .qr img{ width:150px; height:150px; box-shadow:none; border-radius:6px; }
+.reveal .qr span{ font-size:.5em; color:var(--muted); }
+
+/* ============================================================
+   Map view — pan/zoom map of all slides (js/mapview.js)
+   ============================================================ */
+#mapBtn{ position:fixed; top:44px; right:16px; z-index:40; width:40px; height:40px; padding:0;
+  display:inline-flex; align-items:center; justify-content:center; border-radius:10px;
+  background:#fff; color:var(--camb); border:2px solid var(--camb); cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,62,116,.2); }
+#mapBtn svg{ width:20px; height:20px; }
+/* move the menu (☰) button out of the top-left so it clears Play-narrated */
+.slide-menu-button{ top:44px !important; right:64px !important; left:auto !important; }
+
+#mapOverlay{ position:fixed; inset:0; z-index:60; display:none; overflow:hidden;
+  background:#eef2f6; cursor:grab; }
+#mapOverlay.open{ display:block; }
+#mapOverlay.grabbing{ cursor:grabbing; }
+#mapCanvas{ position:absolute; top:0; left:0; transform-origin:0 0; will-change:transform; }
+
+.map-col-label{ position:absolute; font-family:'LM Sans',sans-serif; font-weight:700;
+  font-size:17px; color:var(--camb); text-align:center; }
+.map-tile{ position:absolute; width:384px; height:216px; border:2px solid #cdd6df; border-radius:10px;
+  overflow:hidden; background:#fff; box-shadow:0 5px 16px rgba(0,0,0,.10); cursor:pointer;
+  transition:border-color .12s, box-shadow .12s; }
+.map-tile:hover{ border-color:var(--camb); box-shadow:0 10px 26px rgba(0,62,116,.28); }
+.map-tile.is-divider{ background:var(--camb); }
+.map-thumb{ width:960px; height:540px; transform:scale(.4); transform-origin:top left; overflow:hidden; }
+.map-tile.is-divider .map-thumb{ background:var(--camb); }
+/* neutralise reveal's per-slide positioning on the clones */
+#mapOverlay .map-thumb > section{ display:block !important; position:relative !important;
+  top:0 !important; left:0 !important; transform:none !important; opacity:1 !important;
+  visibility:visible !important; width:960px !important; height:540px !important;
+  box-sizing:border-box; padding:46px 54px; text-align:left; }
+#mapOverlay .map-thumb section.plain,
+#mapOverlay .map-thumb section.section-divider{ display:flex !important; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center; }
+#mapOverlay .map-thumb h2{ color:var(--camb); border-bottom:3px solid var(--camb);
+  padding-bottom:.15em; margin-bottom:.5em; }
+#mapOverlay .map-tile.is-divider h2,
+#mapOverlay .map-tile.is-plain h2{ border:none; }
+#mapOverlay .map-tile.is-divider h2{ color:#fff; }
+
+#mapClose,#mapZoom button{ font-family:'LM Sans',sans-serif; cursor:pointer; border:none;
+  background:var(--camb); color:#fff; box-shadow:0 4px 14px rgba(0,62,116,.3); }
+#mapClose{ position:fixed; top:16px; right:16px; z-index:62; border-radius:10px;
+  padding:9px 15px; font-size:15px; font-weight:700; }
+#mapZoom{ position:fixed; right:20px; bottom:20px; z-index:62; display:flex; flex-direction:column; gap:8px; }
+#mapZoom button{ width:42px; height:42px; border-radius:10px; font-size:22px; line-height:1; }
+#mapHint{ position:fixed; left:50%; bottom:20px; transform:translateX(-50%); z-index:62;
+  font-family:'LM Sans',sans-serif; font-size:13px; color:var(--muted);
+  background:rgba(255,255,255,.85); border:1px solid var(--line); border-radius:999px; padding:6px 16px; }
+#mapOverlay:not(.open) ~ #mapClose,
+#mapOverlay:not(.open) ~ #mapZoom,
+#mapOverlay:not(.open) ~ #mapHint{ display:none; }
+
+/* in map mode, hide the presenting chrome and the arrow controls */
+body.map-open .reveal .controls,
+body.map-open #headline, body.map-open #footline,
+body.map-open .floating-btn, body.map-open #mapBtn,
+body.map-open .slide-menu-button{ display:none !important; }
+
+body.overview-active .floating-btn{ display:none !important; }
+
+@media print{ .floating-btn,#headline,#footline,#mapBtn,.slide-menu-button,.anim-demo{ display:none !important; } }

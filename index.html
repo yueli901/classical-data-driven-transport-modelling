@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bridging Classical and Data-Driven Transport Modelling</title>
+  <meta name="theme-color" content="#003E74">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+
+  <link rel="stylesheet" href="dist/reset.css">
+  <link rel="stylesheet" href="dist/reveal.css">
+  <link rel="stylesheet" href="dist/theme/white.css" id="theme">
+  <link rel="stylesheet" href="plugin/menu/menu.css">
+  <link rel="stylesheet" href="plugin/chalkboard/style.css">
+  <link rel="stylesheet" href="dist/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="css/theme-cambridge.css">
+
+  <script>
+    window.TALK = {
+      author: "Yue Li",
+      institution: "University of Cambridge",
+      title: "Bridging Classical and Data-Driven Transport Modelling",
+      date: "July 4, 2026"
+    };
+  </script>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ===== TITLE ===== -->
+    <section>
+      <section class="title-slide plain">
+        <span class="title-box"><h1>Bridging Classical and Data-Driven<br>Transport Modelling</h1></span>
+        <div class="cols" style="align-items:center; justify-content:center; margin-top:.5em;">
+          <div class="col-60">
+            <p class="byline">
+              <strong>Yue Li</strong><br>
+              <span class="affil">Martin Centre for Architectural and Urban Studies</span><br>
+              <span class="affil">Department of Architecture</span><br>
+              <span class="affil">University of Cambridge</span><br>
+              <span class="affil" style="display:inline-block; margin-top:.5em;">July 4, 2026</span>
+            </p>
+          </div>
+          <div class="col-40 center">
+            <span class="qr"><img src="assets/qr.svg" alt="QR"><span>open these slides on your phone</span></span>
+          </div>
+        </div>
+        <aside class="notes">No prior background in machine learning is assumed.</aside>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <section data-section="The problem">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Part 1</div><h2>The problem</h2>
+      </section>
+
+      <section>
+        <h2>Why model traffic at all?</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Traffic volume on a road underpins nearly every big decision about a city or a country:</p>
+            <ul>
+              <li><strong>Infrastructure</strong> — where to build or widen roads</li>
+              <li><strong>Investment</strong> — appraisal of transport schemes</li>
+              <li><strong>Climate</strong> — road transport emissions and policy</li>
+              <li><strong>Public health</strong> — air quality, noise, safety</li>
+            </ul>
+            <p class="note" style="margin-top:.3em;">Road transport is <strong>86%</strong> of UK passenger-km. We need estimates <em>everywhere</em> — unsensored roads included — and for <em>years ahead</em>.</p>
+          </div>
+          <div class="col-40 center">
+            <img class="fig-tall" src="figures/mk_traffic_map.png" alt="England traffic">
+            <div class="muted" style="font-size:.55em;">Observed traffic, England's strategic road network.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The core question</h2>
+        <div class="center"><img class="dia" style="width:74%;max-height:490px" src="figures/dia_01.svg"></div>
+        <p class="center muted" style="font-size:.62em;">Two research traditions try to answer this — and each fails in a different way.</p>
+      </section>
+
+      <section>
+        <h2>Two worlds, two kinds of failure</h2>
+        <div class="center"><img class="dia" style="width:80%;max-height:490px" src="figures/dia_02.svg"></div>
+      </section>
+
+      <section>
+        <h2>What a good answer must have</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Four properties, together — not one at a time:</p>
+            <ol>
+              <li><strong>Accurate</strong> at planning scale</li>
+              <li><strong>Transferable</strong> to unseen regions</li>
+              <li><strong>Interpretable</strong> — we can read <em>why</em></li>
+              <li><strong>Long-term</strong> — no reliance on recent sensor readings</li>
+            </ol>
+            <p class="alert" style="margin-top:.3em;">No existing model delivers all four at national scale. This talk builds towards one that does.</p>
+          </div>
+          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_03.svg"></div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <section data-section="Classical theory: the four-step model">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Part 2</div><h2>Classical theory:<br>the four-step model</h2>
+      </section>
+
+      <section>
+        <h2>The planner's mental model: four steps</h2>
+        <div class="center"><img class="dia" style="width:96%;max-height:490px" src="figures/dia_04.svg"></div>
+        <p class="note">Break the impossible question — traffic on every road — into four smaller, human-readable questions, solved in sequence. Every commercial planning model is a version of this.</p>
+      </section>
+
+      <section>
+        <h2>Step 1 — Trip generation <span class="muted" style="font-size:.6em;">&nbsp;this is just regression</span></h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>How many trips does a zone produce? Fit a regression on things you can measure:</p>
+            $$ T_i = \beta_0 + \beta_1\,\text{Pop}_i + \beta_2\,\text{Jobs}_i + \beta_3\,\text{Cars}_i + \dots $$
+            <ul>
+              <li>exactly the multiple regression you already use</li>
+              <li>coefficients $\beta$ are readable</li>
+              <li>also done by <em>category analysis</em> (trip rates per household type)</li>
+            </ul>
+          </div>
+          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_05.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Step 2 — Trip distribution: the gravity model</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Where do the trips go? Borrow Newton's idea — two big places that are close exchange more trips:</p>
+            $$ T_{ij} = k\,\frac{O_i\,D_j}{f(c_{ij})}, \qquad f(c_{ij}) = e^{\beta c_{ij}} $$
+            <ul>
+              <li>$O_i$ trips out of $i$, &nbsp; $D_j$ trips into $j$</li>
+              <li>$c_{ij}$ travel cost; the <strong>deterrence</strong> $f$ penalises distance</li>
+            </ul>
+            <p class="muted" style="font-size:.62em;">Remember <strong>deterrence</strong> — it comes back in my model.</p>
+          </div>
+          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_06.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Steps 3 &amp; 4 — Mode choice and assignment</h2>
+        <div class="cols">
+          <div>
+            <p><strong>Step 3 — Modal split.</strong> Which mode? A <em>logit</em> choice: cheaper/faster modes win a bigger share.</p>
+            $$ P^{\,k}_{ij} = \frac{e^{-\beta\, c^{\,k}_{ij}}}{\sum_{m} e^{-\beta\, c^{\,m}_{ij}}} $$
+            <p class="muted" style="font-size:.6em;">Softmax over modes — we meet softmax again.</p>
+          </div>
+          <div class="center">
+            <p style="text-align:left"><strong>Step 4 — Assignment.</strong> Load car trips onto roads — usually the <em>shortest path</em> per pair.</p>
+            <img class="dia" style="width:100%;max-height:490px" src="figures/dia_07.svg">
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The four-step model: honest balance sheet</h2>
+        <div class="cols">
+          <table>
+            <thead><tr><th style="background:var(--deep)">Strengths</th></tr></thead>
+            <tbody>
+              <tr><td>Interpretable at every step</td></tr>
+              <tr><td>Behaviourally grounded</td></tr>
+              <tr><td>Trusted by institutions</td></tr>
+              <tr><td>Transparent policy levers</td></tr>
+            </tbody>
+          </table>
+          <table>
+            <thead><tr><th style="background:var(--mag)">Limitations</th></tr></thead>
+            <tbody>
+              <tr><td>Steps assumed independent</td></tr>
+              <tr><td>Heavy manual calibration per city</td></tr>
+              <tr><td>Coarse zones, fixed impedance</td></tr>
+              <tr><td>Poor under genuinely new scenarios</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">It gives us the <strong>vocabulary</strong> (generation, distribution, deterrence, assignment). Later I keep the vocabulary but let the computer <em>learn</em> each piece.</p>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <section data-section="A toolbox: machine learning &amp; deep learning">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Part 3</div><h2>A toolbox:<br>machine learning &amp; deep learning</h2>
+      </section>
+
+      <section>
+        <h2>First, reframe the task: supervised learning</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>A model is a function from <strong>features</strong> $X$ to a <strong>label</strong> $y$:</p>
+            $$ \hat{y} = f(X) $$
+            <p>We know $y$ where sensors exist; we want to fill in the rows where we do not.</p>
+            <ul>
+              <li><strong>features</strong> = what we know about a road &amp; its surroundings</li>
+              <li><strong>label</strong> = the traffic volume we want</li>
+            </ul>
+          </div>
+          <div class="col-40 center">
+            <table style="font-size:.72em;">
+              <thead><tr><th>Pop</th><th>Jobs</th><th>Cars</th><th style="background:var(--gold)">Traffic</th></tr></thead>
+              <tbody>
+                <tr><td>12k</td><td>8k</td><td>0.9</td><td>41,000</td></tr>
+                <tr><td>3k</td><td>2k</td><td>1.3</td><td>9,500</td></tr>
+                <tr><td>27k</td><td>19k</td><td>0.7</td><td>88,000</td></tr>
+                <tr><td>6k</td><td>5k</td><td>1.1</td><td style="color:var(--mag);font-weight:700">?</td></tr>
+              </tbody>
+            </table>
+            <div class="muted" style="font-size:.55em;margin-top:.3em;">Predicting traffic = filling the last cell.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Start where you already stand: linear regression</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Fit the best straight line through the data:</p>
+            $$ \hat{y} = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots $$
+            <ul>
+              <li>one feature → a line; many features → a plane</li>
+              <li>choose $\beta$ to minimise $\sum (y-\hat y)^2$</li>
+              <li><strong>fully interpretable</strong>, but assumes a straight-line world</li>
+            </ul>
+          </div>
+          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_08.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>When straight lines are not enough</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Real relationships <strong>bend</strong> and <strong>interact</strong>:</p>
+            <ul>
+              <li>traffic saturates once a road is full</li>
+              <li>"more jobs" matters far more <em>near a motorway</em> — an <strong>interaction</strong></li>
+              <li>a straight line captures neither</li>
+            </ul>
+            <p class="alert">On our national data, plain linear regression scores <strong>$R^2 \approx 0$</strong> on unseen roads. The tools next reach <strong>0.6–0.7</strong>.</p>
+          </div>
+          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_09.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Decision trees: ask yes/no questions</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>A tree splits the data with simple questions, carving the feature space into boxes.</p>
+            <ul>
+              <li>no equations — just <em>if / then</em></li>
+              <li>captures bends &amp; interactions</li>
+              <li>easy to read, but one tree is unstable</li>
+            </ul>
+          </div>
+          <div class="col-60 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_10.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Random forest: a crowd of trees</h2>
+        <div class="cols">
+          <div>
+            <p>Grow <strong>hundreds</strong> of different trees (each on a random slice of data and features), then <strong>average</strong> them.</p>
+            <ul>
+              <li>one tree is noisy; the average is stable</li>
+              <li>"wisdom of the crowd" for models</li>
+              <li>often the strongest simple option on tables</li>
+            </ul>
+            <p class="muted" style="font-size:.6em;">Random forest is one of our baselines later.</p>
+          </div>
+          <div class="center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_11.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Boosting → XGBoost: trees that fix each other</h2>
+        <div class="cols">
+          <div>
+            <p>Build trees <strong>in sequence</strong>: each new tree predicts the <em>errors</em> the previous ones left behind.</p>
+            <ul>
+              <li>small corrections, added up</li>
+              <li><strong>XGBoost</strong> is the popular, fast version</li>
+              <li>usually the <strong>strongest</strong> model on plain tables</li>
+            </ul>
+          </div>
+          <div class="center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_12.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Neural networks — the forward pass</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>A <strong>neuron</strong> takes a weighted sum and bends it:</p>
+            $$ h = \sigma\!\Big(\textstyle\sum_i w_i x_i + b\Big) $$
+            <ul style="font-size:.9em;">
+              <li>weights $w$ = what it learns</li>
+              <li>$\sigma$ (the bend) lets it curve</li>
+              <li>left→right = a prediction</li>
+            </ul>
+          </div>
+          <div class="col-60 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_13.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>How a network learns — gradients &amp; back-propagation</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Learning = nudging every weight to reduce the error $L$.</p>
+            <ol style="font-size:.92em;">
+              <li><strong>forward</strong>: compute prediction and error $L=(y-\hat y)^2$</li>
+              <li><strong>backward</strong>: send the error back through the layers</li>
+              <li>each weight learns its blame via the <strong>chain rule</strong>:</li>
+            </ol>
+            $$ \frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat y}\, \frac{\partial \hat y}{\partial h}\, \frac{\partial h}{\partial w} $$
+            <p class="note" style="font-size:.8em;">Gradient descent: &nbsp; $w \leftarrow w - \eta\,\dfrac{\partial L}{\partial w}$ &nbsp; (a small step downhill)</p>
+          </div>
+          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_14.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>From tables to structure</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Everything so far assumes a tidy <strong>table</strong> of independent rows. But a country is not a table:</p>
+            <ul>
+              <li><strong>where</strong> people live is a <em>map</em> (a grid of pixels)</li>
+              <li>roads form a <em>network</em> (a graph)</li>
+              <li>a road's traffic depends on its <em>neighbours</em></li>
+            </ul>
+            <p>Two specialised networks read these directly: <strong>CNN</strong> (grids) and <strong>GAT</strong> (graphs).</p>
+          </div>
+          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_15.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>CNN — learning from spatial grids</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>A <strong>convolutional</strong> network slides small filters across an image, learning local patterns.</p>
+            <ul style="font-size:.92em;">
+              <li>input: maps of population, jobs, land use</li>
+              <li>output: a summary of "what surrounds this place"</li>
+              <li>the same idea that reads photographs</li>
+            </ul>
+          </div>
+          <div class="col-60 center"><img class="fig-wide" src="figures/mk_cnn_block.png" alt="CNN block"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>GAT — learning on networks (graph attention)</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>A <strong>graph attention</strong> network lets each road update from its neighbours — and <em>learn how much</em> to weight each one.</p>
+            <ul style="font-size:.92em;">
+              <li>respects the actual road connections</li>
+              <li>important neighbours count more</li>
+              <li>how information "flows" along the network</li>
+            </ul>
+          </div>
+          <div class="col-60 center"><img class="fig-wide" src="figures/mk_gat_block.png" alt="GAT block"></div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <section data-section="What is still missing">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Part 4</div><h2>What is still missing</h2>
+      </section>
+
+      <section>
+        <h2>Today's traffic deep learning is "one step behind"</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>State-of-the-art short-term models predict the next 5–60 minutes well — because they mostly <strong>copy the last reading</strong>.</p>
+            <ul style="font-size:.9em;">
+              <li>prediction just trails the true curve by one step</li>
+              <li>needs dense sensor history</li>
+              <li>cannot see <em>unsensored</em> roads</li>
+              <li>cannot serve <em>long-term</em> planning</li>
+            </ul>
+          </div>
+          <div class="col-60 center"><img class="fig" style="max-height:400px" src="figures/stmetanet_lag.png" alt="one step behind"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Four problems a better model must solve</h2>
+        <div class="center"><img class="dia" style="width:72%;max-height:490px" src="figures/dia_16.svg"></div>
+        <p class="center muted" style="font-size:.6em;">Accuracy and cost are engineering; transferability and mechanism are where <em>theory</em> earns its keep.</p>
+      </section>
+
+      <section>
+        <h2>Design goal</h2>
+        <div class="center"><img class="dia" style="width:66%;max-height:490px" src="figures/dia_17.svg"></div>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <section data-section="Data">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Part 5</div><h2>Data</h2>
+      </section>
+
+      <section>
+        <h2>Three ingredients, shared by both models</h2>
+        <div class="cols">
+          <div class="center">
+            <strong style="color:var(--camb)">Road network</strong>
+            <img class="dia" style="width:100%;max-height:490px" src="figures/dia_18.svg">
+            <div class="muted" style="font-size:.55em;">OSM + National Highways.<br>~6.3M nodes, 7.2M edges.</div>
+          </div>
+          <div class="center">
+            <strong style="color:var(--camb)">Socioeconomic features</strong>
+            <img class="fig" style="max-height:200px" src="figures/mk_pop_emp.png" alt="features">
+            <div class="muted" style="font-size:.55em;">35,672 small areas (LSOA):<br>population, jobs, cars, land use, POIs.</div>
+          </div>
+          <div class="center">
+            <strong style="color:var(--camb)">Ground-truth traffic</strong>
+            <img class="fig" style="max-height:200px" src="figures/mk_traffic_map.png" alt="TRIS">
+            <div class="muted" style="font-size:.55em;">National Highways sensors (TRIS):<br>5,088 segments, 2015–2024.</div>
+          </div>
+        </div>
+        <p class="center note" style="font-size:.75em;">Features $=X$; sensor volumes $=y$. Train where we have sensors, predict everywhere else.</p>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <section data-section="Mukara">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Part 6</div><h2>Mukara</h2>
+      </section>
+
+      <section>
+        <h2>Mukara — the idea</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p class="ok"><strong>One sentence:</strong> predict traffic on every road <strong>from socioeconomic &amp; network features alone</strong>, learned <strong>end-to-end</strong> — no historical sensor input.</p>
+            <p>It treats the whole demand-to-traffic pipeline as one learnable function:</p>
+            $$ \hat{Y} = \text{Mukara}(\underbrace{G}_{\text{network}},\ \underbrace{X}_{\text{features}}) $$
+            <ul style="font-size:.9em;">
+              <li>"from nothing" — works at unsensored roads by design</li>
+              <li>built from two pieces you met: CNN + GAT</li>
+            </ul>
+          </div>
+          <div class="col-40 center"><img class="dia" style="width:86%;max-height:490px" src="figures/dia_19.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Mukara — architecture</h2>
+        <div class="center"><img class="fig-wide" style="max-height:440px" src="figures/mk_framework.png" alt="mukara architecture"></div>
+        <p class="center muted" style="font-size:.55em;">Grid features → CNN → node embeddings; road graph → GAT → per-edge traffic prediction.</p>
+      </section>
+
+      <section>
+        <h2>You have already seen every piece</h2>
+        <div class="center"><img class="dia" style="width:94%;max-height:490px" src="figures/dia_20.svg"></div>
+        <p class="note">No new magic — Mukara is CNN (spatial context) + GAT (network context) + a regression head, trained together by gradient descent.</p>
+      </section>
+
+      <section>
+        <h2>Mukara — results (kept simple)</h2>
+        <div class="cols">
+          <div class="col-60 center"><img class="fig" style="max-height:430px" src="figures/mk_results.png" alt="mukara results"></div>
+          <div class="col-40">
+            <p class="ok center"><strong>$R^2 = 0.58$</strong><br>MAE $\approx 9{,}000$ veh/day<br><span class="muted" style="font-size:.8em;">(unseen test roads)</span></p>
+            <ul style="font-size:.85em;">
+              <li>predicts traffic it never saw, from features alone</li>
+              <li>holds up under <em>spatial</em> testing (whole regions held out)</li>
+              <li>a genuine "from nothing" proof of concept</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Mukara — what it cannot do</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Mukara predicts well, but it is still a <strong>black box</strong>:</p>
+            <ul>
+              <li>no explicit <strong>origin–destination</strong> reasoning — it does not know <em>which trips</em> use a road</li>
+              <li>no readable <strong>deterrence</strong> curve</li>
+              <li>no modular map back to the four steps — few policy levers</li>
+            </ul>
+            <p class="alert">This is exactly what DeepDemand fixes.</p>
+          </div>
+          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_21.svg"></div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <section data-section="DeepDemand">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Part 7</div><h2>DeepDemand</h2>
+      </section>
+
+      <section>
+        <h2>DeepDemand — embed the theory inside the network</h2>
+        <p class="ok"><strong>One sentence:</strong> take the four-step vocabulary and make <strong>each component a learnable part</strong> of a single, end-to-end differentiable model.</p>
+        <div class="center"><img class="dia" style="width:92%;max-height:490px" src="figures/dia_22.svg"></div>
+        <p class="center muted" style="font-size:.6em;">Theory decides the <em>structure</em>; data fills in the <em>functions</em>.</p>
+      </section>
+
+      <section>
+        <h2>Theory ↔ model, side by side</h2>
+        <table style="margin:0 auto;">
+          <thead><tr><th>Four-step concept</th><th>DeepDemand component</th></tr></thead>
+          <tbody>
+            <tr><td>Trip generation &amp; attraction</td><td>node encoders $f_O, f_D$ (small neural nets)</td></tr>
+            <tr><td>Trip distribution</td><td>OD interaction scorer $f_{OD}$</td></tr>
+            <tr><td>Impedance / deterrence</td><td>learnable travel-time curve $f_t$</td></tr>
+            <tr><td>Traffic assignment</td><td>competitive Dijkstra selects the OD pairs</td></tr>
+            <tr><td>Congestion / equilibrium</td><td>monotonic scaling $f_S$</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Key idea — which trips actually use <em>this</em> road?</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>Grow two searches from the road's two ends (a "competitive" shortest-path race):</p>
+            <ul style="font-size:.88em;">
+              <li>one side collects feasible <strong>origins</strong>, the other <strong>destinations</strong></li>
+              <li>keep an OD pair only if its fastest route <em>must</em> cross this road</li>
+              <li>cut off at a 1-hour catchment</li>
+            </ul>
+            <p class="muted" style="font-size:.6em;">Anchors each prediction to the demand that <em>causes</em> it — the model's "assignment".</p>
+          </div>
+          <div class="col-60 center"><img class="fig" style="max-height:430px" src="figures/Figure_5.png" alt="local OD region"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Why a 1-hour catchment?</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>A design choice, justified by real travel behaviour (National Travel Survey):</p>
+            <ul>
+              <li>the vast majority of car trips are short</li>
+              <li>only <strong>3.7%</strong> of car trips exceed 60 minutes</li>
+              <li>so a 1-hour catchment captures almost all traffic, while keeping computation feasible</li>
+            </ul>
+          </div>
+          <div class="col-60 center"><img class="fig" style="max-height:400px" src="figures/nts_car_trip_survival.png" alt="NTS survival"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>DeepDemand — the learnable formula</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>For each surviving OD pair, combine two learned quantities and sum:</p>
+            $$ \hat{y}_{e^*}=\gamma\, f_S\!\Big(\!\!\sum_{(o,d)\in\mathcal P^*}\!\! \underbrace{s_{od}}_{\text{dist.}}\cdot \underbrace{p_{od}}_{\text{deter.}}\Big) $$
+            <ul style="font-size:.82em;">
+              <li>$s_{od}$: how much two places want to trade ($f_{OD}$)</li>
+              <li>$p_{od}$: how much travel time discourages it ($f_t$)</li>
+              <li>all trained <strong>jointly</strong> by gradient descent</li>
+            </ul>
+          </div>
+          <div class="col-60 center"><img class="fig-tall" style="max-height:470px" src="figures/Figure_6.png" alt="deepdemand architecture"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>DeepDemand — results (kept simple)</h2>
+        <div class="cols">
+          <div class="col-60 center"><img class="fig-wide" src="figures/dd_results_scatter.png" alt="deepdemand results">
+            <div class="muted" style="font-size:.55em;">Predicted vs. true traffic: train (left), unseen test (right).</div>
+          </div>
+          <div class="col-40">
+            <p class="ok center"><strong>$R^2 = 0.72$</strong> (random test)<br><strong>$R^2 = 0.67$</strong> (whole regions held out)<br>MAE $\approx 7{,}400$ veh/day</p>
+            <ul style="font-size:.82em;">
+              <li>beats linear, ridge, random forest and the classical gravity model</li>
+              <li>strong even when <em>entire regions</em> are unseen</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>It transfers across regions</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>The demanding test: hold out <strong>whole regions</strong>, train on the rest, predict the unseen region.</p>
+            <ul>
+              <li>most regions stay near the overall accuracy</li>
+              <li>embedding demand <em>theory</em> — not just a fixed formula — is what buys the transfer</li>
+            </ul>
+            <p class="muted" style="font-size:.6em;">The property short-term deep learning simply does not have.</p>
+          </div>
+          <div class="col-60 center"><img class="fig" style="max-height:430px" src="figures/spatial_cv_r2_region_bar.png" alt="regional R2"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The payoff (1) — learned deterrence</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>The model learns its own <strong>deterrence curve</strong> — the four-step model's $f(c_{ij})$, but discovered from data, not assumed.</p>
+            <ul style="font-size:.9em;">
+              <li>trips fall smoothly as travel time grows</li>
+              <li>stable across cross-validation folds</li>
+              <li>matches classic survey-based patterns</li>
+            </ul>
+          </div>
+          <div class="col-60 center"><img class="fig" style="max-height:400px" src="figures/dd_deterrence.png" alt="deterrence"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The payoff (2) — what drives demand</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p><strong>SHAP</strong> attribution opens the box: which features push traffic up or down, and where.</p>
+            <ul style="font-size:.9em;">
+              <li>population and jobs dominate, as theory expects</li>
+              <li>car ownership, land use, age structure all readable</li>
+              <li>separate stories for <em>origin</em> vs <em>destination</em></li>
+            </ul>
+          </div>
+          <div class="col-60 center"><img class="fig-tall" style="max-height:480px" src="figures/dd_shap.png" alt="SHAP"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The payoff (3) — demand in space</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>The learned origin–destination "pull" can be mapped, revealing <strong>polycentric</strong> structure aligned with real employment hubs and airports.</p>
+            <p class="note" style="font-size:.82em;">The bridge back to planning: high-demand corridors, spatial mismatches, where new capacity would matter.</p>
+          </div>
+          <div class="col-60 center"><img class="fig-tall" style="max-height:480px" src="figures/Figure_10.png" alt="OD map"></div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <section data-section="Outlook">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Part 8</div><h2>Outlook</h2>
+      </section>
+
+      <section>
+        <h2>Where this leaves us</h2>
+        <div class="cols">
+          <div>
+            <p class="ok" style="font-size:.9em;"><strong>The arc:</strong> regression → trees → neural nets → CNN/GAT → <strong>Mukara</strong> (accurate, from features) → <strong>DeepDemand</strong> (accurate <em>and</em> transferable <em>and</em> interpretable).</p>
+            <ul style="font-size:.85em;">
+              <li>long-term traffic <em>can</em> be predicted from socioeconomics alone</li>
+              <li>embedding theory buys transfer <em>and</em> interpretability</li>
+              <li>the four-step vocabulary survives — now learned, not hand-tuned</li>
+            </ul>
+          </div>
+          <div>
+            <p class="note" style="font-size:.88em;"><strong>Complement, not replacement.</strong> These models are not a rival to established pipelines (four-step, MATSim). They fill the gap those tools leave: fast, data-sparse, unmonitored, national-scale early screening.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>What comes next: Mukara3 &amp; a digital twin</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p><strong>Mukara3</strong> asks the inverse question: infer the <em>latent</em> origin–destination flows behind the counts.</p>
+            <ul style="font-size:.88em;">
+              <li>explicit destination competition (softmax) and cost sensitivity</li>
+              <li>hourly resolution; road counts as the only supervision</li>
+              <li>roadmap: multimodal competition (car / rail / bus)</li>
+            </ul>
+            <p class="muted" style="font-size:.7em;"><strong>Vision:</strong> an interpretable model that learns from incomplete, biased observations — a digital twin for counterfactual policy.</p>
+          </div>
+          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_23.svg"></div>
+        </div>
+      </section>
+
+      <section class="title-slide plain">
+        <span class="title-box"><h1>Thank you</h1></span>
+        <p class="subtitle">Questions &amp; discussion</p>
+        <p class="byline"><strong>Yue Li</strong> · Martin Centre for Architectural and Urban Studies, University of Cambridge</p>
+      </section>
+    </section>
+
+  </div>
+</div>
+
+<!-- Beamer chrome -->
+<div id="headline"><div class="sec"></div><div class="prog"></div></div>
+<div id="footline"><div class="cell a"></div><div class="cell t"></div><div class="cell d"></div></div>
+
+<!-- floating controls -->
+<a id="dlPdf" class="floating-btn" href="slides.pdf" download>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  Download PDF
+</a>
+<button id="playNarrated" class="floating-btn hidden" aria-label="Play narrated">
+  <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+  <span class="lbl">Play narrated</span>
+</button>
+<button id="mapBtn" aria-label="Map view (Esc)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+</button>
+<div id="mapOverlay" class="reveal"><div id="mapCanvas"></div></div>
+<button id="mapClose">&#10005;&nbsp; Close</button>
+<div id="mapZoom"><button id="mapZoomIn" aria-label="Zoom in">+</button><button id="mapZoomOut" aria-label="Zoom out">&minus;</button></div>
+<div id="mapHint">drag to pan &nbsp;·&nbsp; scroll / pinch to zoom &nbsp;·&nbsp; click a slide</div>
+
+<script src="dist/reveal.js"></script>
+<script src="dist/plugin/notes.js"></script>
+<script src="dist/plugin/highlight.js"></script>
+<script src="dist/plugin/zoom.js"></script>
+<script src="plugin/menu/menu.js"></script>
+<script src="plugin/chalkboard/plugin.js"></script>
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/katex/contrib/auto-render.min.js"></script>
+<script src="js/mapview.js"></script>
+<script src="js/narration.js"></script>
+<script src="js/talk.js"></script>
+</body>
+</html>
