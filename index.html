@@ -357,10 +357,10 @@
             <p>Real relationships <strong>bend</strong> and <strong>interact</strong>:</p>
             <ul>
               <li>traffic saturates once a road is full</li>
-              <li>"more jobs" matters far more <em>near a motorway</em> — an <strong>interaction</strong></li>
-              <li>a straight line captures neither</li>
+              <li>jobs matter more <em>near a motorway</em> — an <strong>interaction</strong></li>
             </ul>
-            <p class="alert">On our national data, plain linear regression scores <strong>$R^2 \approx 0$</strong> on unseen roads. The tools next reach <strong>0.6–0.7</strong>.</p>
+            <p style="font-size:.85em;">Regression <em>can</em> bend — with <strong>polynomial</strong> &amp; <strong>spline</strong> terms and <strong>interaction</strong> terms — but you must <em>choose</em> the form by hand. The next models <em>learn</em> it.</p>
+            <p class="alert" style="font-size:.82em;">Plain linear regression scores <strong>$R^2 \approx 0$</strong> on unseen roads; the tools next reach <strong>0.6–0.7</strong>.</p>
           </div>
           <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_09.svg"></div>
         </div>
@@ -451,43 +451,112 @@
           <div class="col-60">
             <p>Everything so far assumes a tidy <strong>table</strong> of independent rows. But a country is not a table:</p>
             <ul>
-              <li><strong>where</strong> people live is a <em>map</em> (a grid of pixels)</li>
+              <li><strong>where</strong> people live is a <em>map</em> (a grid)</li>
               <li>roads form a <em>network</em> (a graph)</li>
-              <li>a road's traffic depends on its <em>neighbours</em></li>
+              <li>traffic unfolds over <em>time</em> (a sequence)</li>
             </ul>
-            <p>Two specialised networks read these directly: <strong>CNN</strong> (grids) and <strong>GAT</strong> (graphs).</p>
+            <p>Specialised networks read each structure: <strong>CNN</strong> (grids), <strong>GAT</strong> (graphs), <strong>RNN / Transformer</strong> (sequences).</p>
           </div>
           <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_15.svg"></div>
         </div>
       </section>
 
+      <!-- CNN -->
       <section>
-        <h2>CNN — learning from spatial grids</h2>
+        <h2>CNN — the fundamental idea (convolution)</h2>
         <div class="cols">
-          <div class="col-40">
-            <p>A <strong>convolutional</strong> network slides small filters across an image, learning local patterns.</p>
-            <ul style="font-size:.92em;">
-              <li>input: maps of population, jobs, land use</li>
-              <li>output: a summary of "what surrounds this place"</li>
-              <li>the same idea that reads photographs</li>
+          <div class="col-60">
+            <p>Slide a small learnable <strong>filter</strong> across the grid; each position gives one cell of a <strong>feature map</strong>.</p>
+            <ul style="font-size:.85em;">
+              <li><strong>convolution</strong> $X * H$ — finds a local pattern anywhere</li>
+              <li><strong>activation</strong> (ReLU) — adds the nonlinear bend</li>
+              <li><strong>pooling</strong> — shrink, keep the strongest response</li>
+              <li>stacked layers: edges → blobs → regions</li>
             </ul>
+            <p class="muted" style="font-size:.6em;">The same operation that reads photographs (LeCun, 1998).</p>
           </div>
-          <div class="col-60 center"><img class="fig-wide" src="figures/mk_cnn_block.png" alt="CNN block"></div>
+          <div class="col-40 center vh"><img class="dia" style="width:100%;max-height:250px" src="figures/cnn_conv.svg"></div>
         </div>
       </section>
 
       <section>
-        <h2>GAT — learning on networks (graph attention)</h2>
+        <h2>CNN in Mukara — reading the population &amp; jobs grid</h2>
         <div class="cols">
           <div class="col-40">
-            <p>A <strong>graph attention</strong> network lets each road update from its neighbours — and <em>learn how much</em> to weight each one.</p>
-            <ul style="font-size:.92em;">
-              <li>respects the actual road connections</li>
-              <li>important neighbours count more</li>
-              <li>how information "flows" along the network</li>
+            <p>Mukara runs a CNN over rasterised grids around each junction:</p>
+            <ul style="font-size:.82em;">
+              <li>input <strong>131×115×2</strong> — population &amp; employment</li>
+              <li>8 conv layers, <strong>7×7</strong> kernels, BatchNorm + ReLU</li>
+              <li>output <strong>131×115×8</strong> → a node embedding</li>
             </ul>
           </div>
-          <div class="col-60 center"><img class="fig-wide" src="figures/mk_gat_block.png" alt="GAT block"></div>
+          <div class="col-60 center"><img class="fig-wide" src="figures/mk_cnn_block.png"></div>
+        </div>
+      </section>
+
+      <!-- GAT -->
+      <section>
+        <h2>GAT — the fundamental idea (graph attention)</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>On a <strong>graph</strong>, each node updates itself from its <strong>neighbours</strong> — and learns <em>how much</em> to weight each one (the attention $\alpha$).</p>
+            <ul style="font-size:.85em;">
+              <li>neighbours are set by the network, not a grid</li>
+              <li>$\alpha_{ij}$ larger for the neighbours that matter</li>
+              <li>stack layers → signal flows further along the graph</li>
+            </ul>
+            <p class="muted" style="font-size:.6em;">Attention is the same mechanism behind Transformers.</p>
+          </div>
+          <div class="col-40 center vh"><img class="dia" style="width:78%;max-height:250px" src="figures/gat_attention.svg"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>GAT in Mukara — passing signal along roads</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>An edge-aware GAT refines node embeddings over the road graph:</p>
+            <ul style="font-size:.82em;">
+              <li>attention over connected junctions</li>
+              <li>edge features (distance, speed) shape the weights</li>
+              <li>refined embeddings → per-edge traffic prediction</li>
+            </ul>
+          </div>
+          <div class="col-60 center"><img class="fig-wide" src="figures/mk_gat_block.png"></div>
+        </div>
+      </section>
+
+      <!-- RNN -->
+      <section>
+        <h2>RNN — networks for sequences</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Walk through a sequence step by step, carrying a <strong>hidden state</strong> $h_t$ that summarises the past:</p>
+            $$ h_t = f(h_{t-1},\, x_t) $$
+            <ul style="font-size:.85em;">
+              <li>natural for <strong>time series</strong> — traffic over hours or days</li>
+              <li><strong>LSTM / GRU</strong> add gates to remember longer</li>
+              <li>strictly left→right, one step at a time</li>
+            </ul>
+          </div>
+          <div class="col-40 center vh"><img class="dia" style="width:100%;max-height:230px" src="figures/rnn_unrolled.svg"></div>
+        </div>
+      </section>
+
+      <!-- Transformer -->
+      <section>
+        <h2>Transformer — attention instead of recurrence</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Drop the step-by-step loop: let <strong>every token attend to every other</strong> at once (self-attention).</p>
+            <ul style="font-size:.85em;">
+              <li>attention weight from <strong>query·key</strong> similarity</li>
+              <li>captures <strong>long-range</strong> links; fully parallel</li>
+              <li>stacked encoder / decoder blocks (Add&nbsp;&amp;&nbsp;Norm, feed-forward)</li>
+              <li>the backbone of modern sequence models</li>
+            </ul>
+          </div>
+          <div class="col-40 center"><img class="fig" style="max-height:500px" src="figures/transformer_arch.png"></div>
         </div>
       </section>
     </section>
@@ -496,6 +565,12 @@
     <section data-section="What is still missing">
       <section class="section-divider" data-background-color="#003E74">
         <div class="kicker">Part 4</div><h2>What is still missing</h2>
+      </section>
+
+      <section>
+        <h2>Short-term deep learning — the "sandwich" structure</h2>
+        <p style="font-size:.9em;">Today's spatiotemporal models stack the pieces from Part 3: an <strong>RNN</strong> (GRU) encodes the recent time series, a <strong>GAT</strong> mixes across the road graph (the filling), and an RNN decodes the next steps — e.g. ST-MetaNet.</p>
+        <div class="center"><img class="fig-wide" style="max-height:440px" src="figures/stmetanet_sandwich.png"></div>
       </section>
 
       <section>
@@ -515,14 +590,20 @@
       </section>
 
       <section>
-        <h2>Four problems a better model must solve</h2>
-        <div class="center"><img class="dia" style="width:72%;max-height:490px" src="figures/dia_16.svg"></div>
-        <p class="center muted" style="font-size:.6em;">Accuracy and cost are engineering; transferability and mechanism are where <em>theory</em> earns its keep.</p>
+        <h2>Four gaps a better model must close</h2>
+        <div class="center"><img class="dia" style="width:74%;max-height:490px" src="figures/dia_16.svg"></div>
+        <p class="center muted" style="font-size:.6em;">The same four properties from earlier — now framed as the <em>gaps</em> existing models leave open.</p>
       </section>
 
       <section>
         <h2>Design goal</h2>
         <div class="center"><img class="dia" style="width:66%;max-height:490px" src="figures/dia_17.svg"></div>
+      </section>
+
+      <section>
+        <h2>Four-step vs short-term deep learning</h2>
+        <div class="center"><img class="fig-wide" style="max-height:475px" src="figures/comparison_table.png"></div>
+        <p class="center muted" style="font-size:.6em;">Two paradigms, opposite failures — neither is accurate, transferable <em>and</em> interpretable at once.</p>
       </section>
     </section>
 
