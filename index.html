@@ -19,7 +19,7 @@
 
   <script>
     window.TALK = {
-      author: "Yue Li",
+      author: "Dr Yue Li",
       institution: "University of Cambridge",
       title: "Bridging Classical and Data-Driven Transport Modelling",
       date: "July 4, 2026"
@@ -37,7 +37,7 @@
         <div class="cols" style="align-items:center; justify-content:center; margin-top:.5em;">
           <div class="col-60">
             <p class="byline">
-              <strong>Yue Li</strong><br>
+              <strong>Dr Yue Li</strong><br>
               <span class="affil">Martin Centre for Architectural and Urban Studies</span><br>
               <span class="affil">Department of Architecture</span><br>
               <span class="affil">University of Cambridge</span><br>
@@ -45,7 +45,7 @@
             </p>
           </div>
           <div class="col-40 center">
-            <span class="qr"><img src="assets/qr.svg" alt="QR"><span>open these slides on your phone</span></span>
+            <span class="qr"><img src="assets/qr.svg" alt="QR"><span>URL of this talk</span></span>
           </div>
         </div>
         <aside class="notes">No prior background in machine learning is assumed.</aside>
@@ -69,7 +69,7 @@
               <li><strong>Climate</strong> — road transport emissions and policy</li>
               <li><strong>Public health</strong> — air quality, noise, safety</li>
             </ul>
-            <p class="note" style="margin-top:.3em;">Road transport is <strong>86%</strong> of UK passenger-km. We need estimates <em>everywhere</em> — unsensored roads included — and for <em>years ahead</em>.</p>
+            <p class="note" style="margin-top:.3em;">Road transport is <strong>86%</strong> of UK passenger-km.</p>
           </div>
           <div class="col-40 center">
             <img class="fig-tall" src="figures/mk_traffic_map.png" alt="England traffic">
@@ -80,30 +80,18 @@
 
       <section>
         <h2>The core question</h2>
-        <div class="center"><img class="dia" style="width:74%;max-height:490px" src="figures/dia_01.svg"></div>
-        <p class="center muted" style="font-size:.62em;">Two research traditions try to answer this — and each fails in a different way.</p>
-      </section>
-
-      <section>
-        <h2>Two worlds, two kinds of failure</h2>
-        <div class="center"><img class="dia" style="width:80%;max-height:490px" src="figures/dia_02.svg"></div>
+        <div class="center"><img class="dia" style="width:82%;max-height:520px" src="figures/dia_01.svg"></div>
       </section>
 
       <section>
         <h2>What a good answer must have</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>Four properties, together — not one at a time:</p>
-            <ol>
-              <li><strong>Accurate</strong> at planning scale</li>
-              <li><strong>Transferable</strong> to unseen regions</li>
-              <li><strong>Interpretable</strong> — we can read <em>why</em></li>
-              <li><strong>Long-term</strong> — no reliance on recent sensor readings</li>
-            </ol>
-            <p class="alert" style="margin-top:.3em;">No existing model delivers all four at national scale. This talk builds towards one that does.</p>
-          </div>
-          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_03.svg"></div>
-        </div>
+        <p>Four properties, together — not one at a time:</p>
+        <ol style="font-size:1.1em; line-height:2;">
+          <li><strong>Accurate</strong> at planning scale</li>
+          <li><strong>Transferable</strong> to unseen <em>regions</em></li>
+          <li><strong>Transferable</strong> to unseen <em>times or years</em></li>
+          <li><strong>Interpretable</strong> — we can read <em>why</em></li>
+        </ol>
       </section>
     </section>
 
@@ -115,55 +103,176 @@
 
       <section>
         <h2>The planner's mental model: four steps</h2>
-        <div class="center"><img class="dia" style="width:96%;max-height:490px" src="figures/dia_04.svg"></div>
+        <div class="center"><img class="dia" style="width:96%;max-height:420px" src="figures/dia_04.svg"></div>
         <p class="note">Break the impossible question — traffic on every road — into four smaller, human-readable questions, solved in sequence. Every commercial planning model is a version of this.</p>
       </section>
 
+      <!-- Step 1 -->
       <section>
-        <h2>Step 1 — Trip generation <span class="muted" style="font-size:.6em;">&nbsp;this is just regression</span></h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>How many trips does a zone produce? Fit a regression on things you can measure:</p>
-            $$ T_i = \beta_0 + \beta_1\,\text{Pop}_i + \beta_2\,\text{Jobs}_i + \beta_3\,\text{Cars}_i + \dots $$
-            <ul>
-              <li>exactly the multiple regression you already use</li>
-              <li>coefficients $\beta$ are readable</li>
-              <li>also done by <em>category analysis</em> (trip rates per household type)</li>
-            </ul>
-          </div>
-          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_05.svg"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Step 2 — Trip distribution: the gravity model</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>Where do the trips go? Borrow Newton's idea — two big places that are close exchange more trips:</p>
-            $$ T_{ij} = k\,\frac{O_i\,D_j}{f(c_{ij})}, \qquad f(c_{ij}) = e^{\beta c_{ij}} $$
-            <ul>
-              <li>$O_i$ trips out of $i$, &nbsp; $D_j$ trips into $j$</li>
-              <li>$c_{ij}$ travel cost; the <strong>deterrence</strong> $f$ penalises distance</li>
-            </ul>
-            <p class="muted" style="font-size:.62em;">Remember <strong>deterrence</strong> — it comes back in my model.</p>
-          </div>
-          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_06.svg"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Steps 3 &amp; 4 — Mode choice and assignment</h2>
+        <h2>Step 1 — Trip generation / attraction</h2>
+        <p>How many trips each zone <em>produces</em> and <em>attracts</em>, from measurable drivers:</p>
         <div class="cols">
           <div>
-            <p><strong>Step 3 — Modal split.</strong> Which mode? A <em>logit</em> choice: cheaper/faster modes win a bigger share.</p>
-            $$ P^{\,k}_{ij} = \frac{e^{-\beta\, c^{\,k}_{ij}}}{\sum_{m} e^{-\beta\, c^{\,m}_{ij}}} $$
-            <p class="muted" style="font-size:.6em;">Softmax over modes — we meet softmax again.</p>
+            <p class="cat">By purpose</p>
+            <p style="font-size:.8em">work · education · shopping · social &amp; recreation · escort · health · return-home</p>
           </div>
-          <div class="center">
-            <p style="text-align:left"><strong>Step 4 — Assignment.</strong> Load car trips onto roads — usually the <em>shortest path</em> per pair.</p>
-            <img class="dia" style="width:100%;max-height:490px" src="figures/dia_07.svg">
+          <div>
+            <p class="cat">By person / household</p>
+            <p style="font-size:.8em">income · car ownership · household size &amp; structure · socioeconomic status (SES)</p>
+          </div>
+          <div>
+            <p class="cat">By zone (aggregate)</p>
+            <p style="font-size:.8em">land value · residential density · workers &amp; cars per household</p>
           </div>
         </div>
+        <p class="note" style="font-size:.85em">Estimate disaggregate trip rates, then <strong>aggregate</strong> to zone totals — productions $O_i$, attractions $D_j$.</p>
+      </section>
+
+      <section>
+        <h2>Trip generation — three ways to estimate it</h2>
+        <div style="margin-bottom:.4em;">
+          <p class="cat">1&nbsp;· Linear regression</p>
+          <p style="font-size:.8em; margin:.1em 0;">zone trips as a linear function of zone attributes (add SES, land use, …):</p>
+          $$ O_i = \beta_0 + \beta_1\,\text{Pop}_i + \beta_2\,\text{Jobs}_i + \beta_3\,\text{Cars}_i + \beta_4\,\text{SES}_i + \dots $$
+        </div>
+        <div class="cols">
+          <div>
+            <p class="cat">2&nbsp;· Category (cross-classification) analysis</p>
+            <p style="font-size:.78em; margin:.1em 0;">average trip rate $t(h)$ per household category $h$:</p>
+            $$ O_i = \sum_h N_i(h)\,t(h) $$
+          </div>
+          <div>
+            <p class="cat">3&nbsp;· Frequency-choice logit</p>
+            <p style="font-size:.78em; margin:.1em 0;">a discrete choice over how many trips $n$ a household makes:</p>
+            $$ P(n) = \frac{e^{\,V_n}}{\sum_m e^{\,V_m}} $$
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2 -->
+      <section>
+        <h2>Step 2 — Trip distribution: the OD matrix</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p>Spread each origin's trips across destinations → the trip matrix $T_{ij}$.</p>
+            <ul style="font-size:.85em">
+              <li>rows sum to productions $O_i$</li>
+              <li>columns sum to attractions $D_j$</li>
+              <li>grand total $T=\sum_{ij}T_{ij}$</li>
+            </ul>
+          </div>
+          <div class="col-60 center">
+            <table style="font-size:.9em; margin:.3em auto;">
+              <thead><tr><th style="background:#26476b"></th><th>$D_1$</th><th>$D_2$</th><th>$D_3$</th><th style="background:var(--gold)">$\Sigma=O_i$</th></tr></thead>
+              <tbody>
+                <tr><th>$O_1$</th><td>$T_{11}$</td><td>$T_{12}$</td><td>$T_{13}$</td><td style="font-weight:700">$O_1$</td></tr>
+                <tr><th>$O_2$</th><td>$T_{21}$</td><td>$T_{22}$</td><td>$T_{23}$</td><td style="font-weight:700">$O_2$</td></tr>
+                <tr><th>$O_3$</th><td>$T_{31}$</td><td>$T_{32}$</td><td>$T_{33}$</td><td style="font-weight:700">$O_3$</td></tr>
+                <tr><th style="background:var(--gold)">$\Sigma=D_j$</th><td>$D_1$</td><td>$D_2$</td><td>$D_3$</td><td>$T$</td></tr>
+              </tbody>
+            </table>
+            <div class="muted" style="font-size:.55em;">rows = origins $i$, columns = destinations $j$</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Distribution: gravity model &amp; balancing</h2>
+        <div class="cols">
+          <div>
+            <p class="cat">Gravity model</p>
+            <p style="font-size:.82em;">big, nearby zones trade more; a deterrence $f$ penalises cost $c_{ij}$:</p>
+            $$ T_{ij} = A_i O_i\, B_j D_j\, f(c_{ij}) $$
+            $$ f(c_{ij})=e^{-\beta c_{ij}} $$
+            <p class="muted" style="font-size:.72em;">Entropy-maximising: the most probable matrix consistent with $\sum_j T_{ij}=O_i,\ \sum_i T_{ij}=D_j,\ \sum_{ij}T_{ij}c_{ij}=C$. Keep the word <strong>deterrence</strong>.</p>
+          </div>
+          <div>
+            <p class="cat">Furness (bi-proportional) iteration</p>
+            <p style="font-size:.82em;">the balancing factors $A_i,B_j$ must satisfy both margins at once — so iterate:</p>
+            <ol style="font-size:.82em;">
+              <li>scale every <em>row</em> to sum to $O_i$</li>
+              <li>scale every <em>column</em> to sum to $D_j$</li>
+              <li>repeat until both margins hold</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3 -->
+      <section>
+        <h2>Step 3 — Modal split</h2>
+        <div class="cols">
+          <div class="col-40">
+            <p class="cat">What shifts the choice</p>
+            <ul style="font-size:.76em;">
+              <li><em>trip-maker:</em> car availability, licence, income, household</li>
+              <li><em>journey:</em> purpose, time of day, travelling alone?</li>
+              <li><em>service:</em> time, fare, parking, reliability, comfort</li>
+            </ul>
+          </div>
+          <div class="col-60">
+            <p class="cat">Logit mode choice</p>
+            <p style="font-size:.82em;">the share of mode $k$ falls with its generalised cost $C^{\,k}_{ij}$:</p>
+            $$ P^{\,k}_{ij} = \frac{e^{-\lambda\, C^{\,k}_{ij}}}{\sum_{m} e^{-\lambda\, C^{\,m}_{ij}}} $$
+            <p class="muted" style="font-size:.72em;">$\lambda\!\to\!\infty$ ⇒ everyone picks the cheapest mode ("all-or-nothing").</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Generalised cost — one number per mode</h2>
+        <p>Each mode bundles time, money and comfort into a common currency — <strong>its own</strong> $C^{\,k}_{ij}$:</p>
+        $$ C^{\,k}_{ij} = a_1\, t^{\,k}_{\text{in-veh}} + a_2\, t^{\,k}_{\text{wait}} + a_3\,\text{fare}^k + a_4\,\text{park}^k + \dots $$
+        <div class="cols" style="margin-top:.3em;">
+          <div>
+            <p style="font-size:.82em;">this is the cost $c_{ij}$ that feeds the deterrence in distribution — and it <strong>differs by mode</strong>.</p>
+          </div>
+          <div>
+            <p class="cat">Composite cost across modes</p>
+            <p style="font-size:.8em;">one "best of all modes" cost (the log-sum): &nbsp; $K_{ij} = -\tfrac{1}{\lambda}\log \sum_k e^{-\lambda C^{\,k}_{ij}}$</p>
+            <p class="muted" style="font-size:.72em;">$K_{ij}\le \min_k C^{\,k}_{ij}$; closes the loop back to distribution.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4 -->
+      <section>
+        <h2>Step 4 — Trip assignment</h2>
+        <div class="cols">
+          <div class="col-60">
+            <p>Load the OD matrix onto real routes and count the flow on each link.</p>
+            <p class="cat">All-or-nothing</p>
+            <p style="font-size:.82em;">put every OD flow on its single shortest path — simple, one pass.</p>
+            <p class="alert" style="font-size:.82em;">But a road's cost <em>rises</em> with its flow. Realistic assignment needs an <strong>equilibrium</strong>: cost depends on flow, flow depends on cost.</p>
+          </div>
+          <div class="col-40 center vh">
+            <svg viewBox="0 0 240 150" width="94%">
+              <path d="M46,72 Q120,26 194,72" fill="none" stroke="#003E74" stroke-width="3"/>
+              <path d="M46,84 Q120,132 194,84" fill="none" stroke="#003E74" stroke-width="3"/>
+              <circle cx="30" cy="78" r="17" fill="#4682B4"/><text x="30" y="83" text-anchor="middle" fill="#fff" font-size="15">o</text>
+              <circle cx="210" cy="78" r="17" fill="#006E5A"/><text x="210" y="83" text-anchor="middle" fill="#fff" font-size="15">d</text>
+              <text x="120" y="34" text-anchor="middle" font-size="11" fill="#5b6b7a">route 1</text>
+              <text x="120" y="130" text-anchor="middle" font-size="11" fill="#5b6b7a">route 2</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>User equilibrium (UE) vs stochastic UE (SUE)</h2>
+        <div class="cols">
+          <div>
+            <p class="cat">User equilibrium — Wardrop</p>
+            <p style="font-size:.85em;">travellers know costs exactly; no one can cut their travel time by switching route.</p>
+            <p style="font-size:.85em;">⇒ every <em>used</em> route between $i,j$ has equal, minimal cost.</p>
+          </div>
+          <div>
+            <p class="cat">Stochastic user equilibrium</p>
+            <p style="font-size:.85em;">travellers act on <em>perceived</em> (noisy) costs; no one can cut their <em>perceived</em> cost by switching.</p>
+            <p style="font-size:.85em;">⇒ routes chosen probabilistically (logit / probit); UE is the zero-noise limit.</p>
+          </div>
+        </div>
+        <p class="note" style="font-size:.82em;">Both iterate <em>load</em> ⇄ <em>update link costs</em> until flows stop changing — the congested, self-consistent solution.</p>
       </section>
 
       <section>
@@ -701,7 +810,7 @@
       <section class="title-slide plain">
         <span class="title-box"><h1>Thank you</h1></span>
         <p class="subtitle">Questions &amp; discussion</p>
-        <p class="byline"><strong>Yue Li</strong> · Martin Centre for Architectural and Urban Studies, University of Cambridge</p>
+        <p class="byline"><strong>Dr Yue Li</strong> · Martin Centre for Architectural and Urban Studies, University of Cambridge</p>
       </section>
     </section>
 

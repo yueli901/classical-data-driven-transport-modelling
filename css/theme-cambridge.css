@@ -97,6 +97,7 @@
 .reveal .note{ border-left:4px solid var(--camb); background:var(--soft); border-radius:0 10px 10px 0; padding:.55em .8em; }
 .reveal .alert{ border-left:4px solid var(--mag); background:#fbeef2; border-radius:0 10px 10px 0; padding:.55em .8em; }
 .reveal .ok{ border-left:4px solid var(--deep); background:#eaf5f1; border-radius:0 10px 10px 0; padding:.55em .8em; }
+.reveal .cat{ color:#cf6a1a; font-weight:700; margin:.15em 0 .1em; }
 
 /* ---- badges & kbd ---- */
 .reveal .badge{ display:inline-block; padding:.06em .55em; border-radius:999px; font-size:.6em; font-weight:700; color:#fff; vertical-align:middle; }
