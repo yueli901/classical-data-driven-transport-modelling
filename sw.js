@@ -1,6 +1,6 @@
 /* Offline service worker — cache-first for same-origin assets.
    Cross-origin requests (e.g. narration audio on object storage) pass through. */
-const CACHE = 'talk-template-v3';
+const CACHE = 'talk-template-v4';
 const CORE = [
   './', 'index.html',
   'css/theme-cambridge.css',

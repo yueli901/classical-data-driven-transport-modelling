@@ -75,15 +75,22 @@ window.addEventListener('DOMContentLoaded', function () {
 
     hl.classList.remove('hidden'); fl.classList.remove('hidden');
     var pos = sectionPos(s);
+    var prog = s.closest('section[data-section]').getAttribute('data-prog');
     hl.querySelector('.sec').textContent = sec;
-    hl.querySelector('.prog').textContent = 'Section ' + pos.k + ' / ' + pos.m;
+    hl.querySelector('.prog').textContent = prog !== null ? prog : 'Section ' + pos.k + ' / ' + pos.m;
 
+    // slides in a data-appendix section are numbered separately and excluded from the main total
     var n = (typeof Reveal.getSlidePastCount === 'function' ? Reveal.getSlidePastCount() : 0) + 1;
     var N = Reveal.getTotalSlides();
+    var app = document.querySelector('.reveal > .slides > section[data-appendix]');
+    var appAll = app ? Array.prototype.slice.call(app.querySelectorAll(':scope > section')) : [];
+    var appContent = appAll.filter(function (x) { return !x.classList.contains('section-divider'); });
+    var k = appContent.indexOf(s);
+    var page = k >= 0 ? 'Backup ' + (k + 1) + ' / ' + appContent.length : n + ' / ' + (N - appAll.length);
     fl.querySelector('.a').textContent =
       (TALK.author || 'Presenter') + (TALK.institution ? ' (' + TALK.institution + ')' : '');
     fl.querySelector('.t').textContent = TALK.title || document.title;
-    fl.querySelector('.d').textContent = (TALK.date ? TALK.date + '  ·  ' : '') + n + ' / ' + N;
+    fl.querySelector('.d').textContent = (TALK.date ? TALK.date + '  ·  ' : '') + page;
   }
 
   /* ---- offline KaTeX ---- */

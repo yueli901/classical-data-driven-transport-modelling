@@ -19,10 +19,10 @@
 
   <script>
     window.TALK = {
-      author: "Dr Yue Li",
+      author: "Yue Li",
       institution: "University of Cambridge",
       title: "Bridging Classical and Data-Driven Transport Modelling",
-      date: "July 4, 2026"
+      date: "PhD viva"
     };
   </script>
 </head>
@@ -34,889 +34,1222 @@
     <section>
       <section class="title-slide plain">
         <span class="title-box"><h1>Bridging Classical and Data-Driven<br>Transport Modelling</h1></span>
-        <div class="cols" style="align-items:center; justify-content:center; margin-top:.5em;">
-          <div class="col-60">
-            <p class="byline">
-              <strong>Dr Yue Li</strong><br>
-              <span class="affil">Martin Centre for Architectural and Urban Studies</span><br>
-              <span class="affil">Department of Architecture</span><br>
-              <span class="affil">University of Cambridge</span><br>
-              <span class="affil" style="display:inline-block; margin-top:.5em;">July 4, 2026</span>
-            </p>
-          </div>
-          <div class="col-40 center">
-            <span class="qr"><img src="assets/qr.svg" alt="QR"><span>URL of this talk</span></span>
-          </div>
-        </div>
-        <aside class="notes">No prior background in machine learning is assumed.</aside>
+        <p class="subtitle">New Approaches to Traffic Prediction on the UK Road Network</p>
+        <p class="byline">
+          <strong>Yue Li</strong><br>
+          <span class="affil">Martin Centre for Architectural and Urban Studies, Department of Architecture</span><br>
+          <span class="affil">Fitzwilliam College, University of Cambridge</span><br>
+          <span class="affil">Supervisor: Professor Ying Jin</span><br>
+          <span class="occasion">PhD viva voce examination</span>
+        </p>
+      </section>
+    </section>
+
+    <!-- ===== THESIS STRUCTURE ===== -->
+    <section data-section="Thesis structure" data-prog="">
+      <section>
+        <h2>Thesis structure</h2>
+        <table class="outline">
+          <tbody>
+            <tr><td><span class="chnum">1</span></td><td class="t">Introduction</td><td>Motivation, research problem, research questions and contributions</td><td class="rqs"></td></tr>
+            <tr><td><span class="chnum">2</span></td><td class="t">Background and literature review</td><td>Four-step travel demand model, data-driven prediction and estimation, machine learning within the four-step model, integrated demand-to-flow modelling</td><td class="rqs"></td></tr>
+            <tr><td><span class="chnum">3</span></td><td class="t">Methodology and data</td><td>Shared prediction task, road-network, socioeconomic and traffic data, evaluation design</td><td class="rqs"></td></tr>
+            <tr class="mk"><td><span class="chnum">4</span></td><td class="t">Mukara</td><td>CNN and graph attention network on 498 directed trunk-road segments</td><td class="rqs">RQ1 · RQ3</td></tr>
+            <tr class="dd"><td><span class="chnum">5</span></td><td class="t">DeepDemand</td><td>Theory-informed OD representation on 5,088 monitored edges of the national driving network</td><td class="rqs">RQ2 · RQ3</td></tr>
+            <tr><td><span class="chnum">6</span></td><td class="t">Conclusions</td><td>Answers to the research questions, contributions, scope and further work</td><td class="rqs"></td></tr>
+          </tbody>
+        </table>
+        <p class="xsmall muted center" style="margin-top:1em;">Both models share one inference constraint: observed traffic counts supervise fitting and evaluation but are never prediction inputs.</p>
       </section>
     </section>
 
     <!-- ============================================================ -->
-    <section data-section="The problem">
-      <section class="section-divider" data-background-color="#003E74">
-        <div class="kicker">Part 1</div><h2>The problem</h2>
-      </section>
-
-      <section>
-        <h2>Why model traffic at all?</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>Traffic volume on a road underpins nearly every big decision about a city or a country:</p>
-            <ul>
-              <li><strong>Infrastructure</strong> — where to build or widen roads</li>
-              <li><strong>Investment</strong> — appraisal of transport schemes</li>
-              <li><strong>Climate</strong> — road transport emissions and policy</li>
-              <li><strong>Public health</strong> — air quality, noise, safety</li>
-            </ul>
-            <p class="note" style="margin-top:.3em;">Road transport is <strong>86%</strong> of UK passenger-km.</p>
-          </div>
-          <div class="col-40 center">
-            <img class="fig-tall" src="figures/mk_traffic_map.png" alt="England traffic">
-            <div class="muted" style="font-size:.55em;">Observed traffic, England's strategic road network.</div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2>The core question</h2>
-        <div class="center"><img class="dia" style="width:82%;max-height:520px" src="figures/dia_01.svg"></div>
-      </section>
-
-      <section>
-        <h2>What a good answer must have</h2>
-        <p>Four properties, together — not one at a time:</p>
-        <ol style="font-size:1.1em; line-height:2;">
-          <li><strong>Accurate</strong> at planning scale</li>
-          <li><strong>Transferable</strong> to unseen <em>regions</em></li>
-          <li><strong>Transferable</strong> to unseen <em>times or years</em></li>
-          <li><strong>Interpretable</strong> — we can read <em>why</em></li>
-        </ol>
-      </section>
-    </section>
-
+    <!-- CHAPTER 1                                                    -->
     <!-- ============================================================ -->
-    <section data-section="Classical theory: the four-step model">
+    <section data-section="Introduction" data-prog="Chapter 1 of 6">
       <section class="section-divider" data-background-color="#003E74">
-        <div class="kicker">Part 2</div><h2>Classical theory:<br>the four-step model</h2>
+        <div class="kicker">Chapter 1</div><h2>Introduction</h2>
+        <p class="sub">Motivation · research problem · research questions and contributions</p>
       </section>
 
       <section>
-        <h2>The planner's mental model: four steps</h2>
-        <div class="center"><img class="dia" style="width:96%;max-height:420px" src="figures/dia_04.svg"></div>
-        <p class="note">Break the impossible question — traffic on every road — into four smaller, human-readable questions, solved in sequence. Every commercial planning model is a version of this.</p>
-      </section>
-
-      <!-- Step 1 -->
-      <section>
-        <h2>Step 1 — Trip generation / attraction</h2>
-        <p>How many trips each zone <em>produces</em> and <em>attracts</em>, from measurable drivers:</p>
+        <h2>Background and motivation</h2>
         <div class="cols">
-          <div>
-            <p class="cat">By purpose</p>
-            <p style="font-size:.8em">work · education · shopping · social &amp; recreation · escort · health · return-home</p>
-          </div>
-          <div>
-            <p class="cat">By person / household</p>
-            <p style="font-size:.8em">income · car ownership · household size &amp; structure · socioeconomic status (SES)</p>
-          </div>
-          <div>
-            <p class="cat">By zone (aggregate)</p>
-            <p style="font-size:.8em">land value · residential density · workers &amp; cars per household</p>
-          </div>
-        </div>
-        <p class="note" style="font-size:.85em">Estimate disaggregate trip rates, then <strong>aggregate</strong> to zone totals — productions $O_i$, attractions $D_j$.</p>
-      </section>
-
-      <section>
-        <h2>Trip generation — three ways to estimate it</h2>
-        <div style="margin-bottom:.4em;">
-          <p class="cat">1&nbsp;· Linear regression</p>
-          <p style="font-size:.8em; margin:.1em 0;">zone trips as a linear function of zone attributes (add SES, land use, …):</p>
-          $$ O_i = \beta_0 + \beta_1\,\text{Pop}_i + \beta_2\,\text{Jobs}_i + \beta_3\,\text{Cars}_i + \beta_4\,\text{SES}_i + \dots $$
-        </div>
-        <div class="cols">
-          <div>
-            <p class="cat">2&nbsp;· Category (cross-classification) analysis</p>
-            <p style="font-size:.78em; margin:.1em 0;">average trip rate $t(h)$ per household category $h$:</p>
-            $$ O_i = \sum_h N_i(h)\,t(h) $$
-          </div>
-          <div>
-            <p class="cat">3&nbsp;· Frequency-choice logit</p>
-            <p style="font-size:.78em; margin:.1em 0;">a discrete choice over how many trips $n$ a household makes:</p>
-            $$ P(n) = \frac{e^{\,V_n}}{\sum_m e^{\,V_m}} $$
-          </div>
-        </div>
-      </section>
-
-      <!-- Step 2 -->
-      <section>
-        <h2>Step 2 — Trip distribution: the OD matrix</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p>Spread each origin's trips across destinations → the trip matrix $T_{ij}$.</p>
-            <ul style="font-size:.85em">
-              <li>rows sum to productions $O_i$</li>
-              <li>columns sum to attractions $D_j$</li>
-              <li>grand total $T=\sum_{ij}T_{ij}$</li>
+          <div class="f55">
+            <ul class="small">
+              <li>Link-level traffic volumes inform infrastructure investment, congestion management, emissions regulation and public-health assessment.</li>
+              <li>Road transport dominates travel. Cars, vans and taxis carried <strong>86%</strong> of passenger-kilometres in Great Britain in 2022.</li>
+              <li>Much recent deep learning forecasts traffic minutes to hours ahead from <strong>recent sensor observations</strong>.</li>
+              <li>Planning faces a different information constraint. Many roads have no measurement history, and traffic must be related to population, employment, land use and network structure.</li>
+              <li>Empirical setting: interurban highway traffic on England's Strategic Road Network (SRN), with socioeconomic inputs for England and Wales.</li>
             </ul>
           </div>
-          <div class="col-60 center">
-            <table style="font-size:.9em; margin:.3em auto;">
-              <thead><tr><th style="background:#26476b"></th><th>$D_1$</th><th>$D_2$</th><th>$D_3$</th><th style="background:var(--gold)">$\Sigma=O_i$</th></tr></thead>
-              <tbody>
-                <tr><th>$O_1$</th><td>$T_{11}$</td><td>$T_{12}$</td><td>$T_{13}$</td><td style="font-weight:700">$O_1$</td></tr>
-                <tr><th>$O_2$</th><td>$T_{21}$</td><td>$T_{22}$</td><td>$T_{23}$</td><td style="font-weight:700">$O_2$</td></tr>
-                <tr><th>$O_3$</th><td>$T_{31}$</td><td>$T_{32}$</td><td>$T_{33}$</td><td style="font-weight:700">$O_3$</td></tr>
-                <tr><th style="background:var(--gold)">$\Sigma=D_j$</th><td>$D_1$</td><td>$D_2$</td><td>$D_3$</td><td>$T$</td></tr>
-              </tbody>
-            </table>
-            <div class="muted" style="font-size:.55em;">rows = origins $i$, columns = destinations $j$</div>
+          <div class="f45">
+            <p class="cat" style="font-size:.74em;">Three requirements used to assess the models</p>
+            <div class="req teal"><strong>Accuracy</strong><span>Agreement with held-out traffic counts</span></div>
+            <div class="req purple"><strong>Spatial generalisation</strong><span>Prediction in regions excluded from fitting</span></div>
+            <div class="req red"><strong>Interpretability</strong><span>Examination of learned demand-related relationships</span></div>
+            <p class="xsmall muted">Related but distinct. Random hold-out accuracy does not establish geographical transfer, and accuracy alone does not establish what learned quantities mean (Figure 1.1).</p>
           </div>
         </div>
       </section>
 
       <section>
-        <h2>Distribution: gravity model &amp; balancing</h2>
-        <div class="cols">
-          <div>
-            <p class="cat">Gravity model</p>
-            <p style="font-size:.82em;">big, nearby zones trade more; a deterrence $f$ penalises cost $c_{ij}$:</p>
-            $$ T_{ij} = A_i O_i\, B_j D_j\, f(c_{ij}) $$
-            $$ f(c_{ij})=e^{-\beta c_{ij}} $$
-            <p class="muted" style="font-size:.72em;">Entropy-maximising: the most probable matrix consistent with $\sum_j T_{ij}=O_i,\ \sum_i T_{ij}=D_j,\ \sum_{ij}T_{ij}c_{ij}=C$. Keep the word <strong>deterrence</strong>.</p>
+        <h2>Two information structures</h2>
+        <table class="tbl" style="font-size:.6em;">
+          <thead><tr><th style="width:17%"></th><th>Four-step travel demand model (TDM)</th><th>Sensor-history deep learning</th></tr></thead>
+          <tbody>
+            <tr><th>Target</th><td>Trip totals, OD movements, modal shares and assigned link volumes</td><td>Future traffic states, minutes to hours ahead</td></tr>
+            <tr><th>Inputs</th><td>Socioeconomic and land-use characteristics, travel services, costs and network</td><td>Recent traffic observations at the target and neighbouring sensors</td></tr>
+            <tr><th>Representation</th><td>Explicit generation, distribution, mode-choice and assignment relationships</td><td>Learned spatial and temporal dependencies in observed traffic</td></tr>
+            <tr><th>Evaluation</th><td>Calibration and validation at several intermediate and network levels</td><td>Held-out temporal predictions against measured traffic states</td></tr>
+            <tr><th>Main constraint</th><td>Data, assumptions and local calibration across several components</td><td>Traffic-state observations are required when predictions are made</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">After Table 1.1</p>
+        <p class="note small" style="margin-top:.7em;">Other approaches sit between the two: external-attribute estimators, probe-based reconstruction, machine learning inside single TDM stages, joint estimation and simulator surrogates. Each addresses part of the demand-to-flow chain (Chapter 2).</p>
+      </section>
+
+      <section>
+        <h2>Research problem: supervision versus inference</h2>
+        <div class="io">
+          <div class="io-row">
+            <div class="io-lab">Fitting and evaluation</div>
+            <span class="box">External inputs $\mathcal{X}$</span><span class="arr">+</span><span class="box">Road network $\mathcal{G}$</span><span class="arr">→</span><span class="box model">$f_{\boldsymbol{\theta}}$</span><span class="arr">→</span><span class="box">$\hat{y}_i$</span><span class="arr">⟷</span><span class="box obs">Observed link counts $y_i$</span>
           </div>
-          <div>
-            <p class="cat">Furness (bi-proportional) iteration</p>
-            <p style="font-size:.82em;">the balancing factors $A_i,B_j$ must satisfy both margins at once — so iterate:</p>
-            <ol style="font-size:.82em;">
-              <li>scale every <em>row</em> to sum to $O_i$</li>
-              <li>scale every <em>column</em> to sum to $D_j$</li>
-              <li>repeat until both margins hold</li>
+          <div class="io-row">
+            <div class="io-lab">Prediction at a target road</div>
+            <span class="box">External inputs $\mathcal{X}$</span><span class="arr">+</span><span class="box">Road network $\mathcal{G}$</span><span class="arr">→</span><span class="box model">$f_{\widehat{\boldsymbol{\theta}}}$</span><span class="arr">→</span><span class="box">$\hat{y}_i$</span>
+          </div>
+          <div class="io-row">
+            <div class="io-lab">Not required at prediction</div>
+            <span class="chip x">recent traffic histories</span><span class="chip x">probe speeds</span><span class="chip x">neighbouring counts</span><span class="chip x">observed OD matrix</span>
+          </div>
+        </div>
+        <ul class="xsmall">
+          <li>Existing methods address portions of the demand-to-flow chain, or rely on traffic-state observations or intermediate demand quantities when predicting.</li>
+          <li>Less developed setting: link-count supervision, with inference from external socioeconomic, land-use and network information only.</li>
+          <li>How transport information is represented then matters as much as the choice of learning algorithm: flexible representation learning or explicit theory-informed structure.</li>
+        </ul>
+        <p class="ok xsmall"><strong>Central hypothesis.</strong> External demand-related characteristics and network structure contain sufficient information to support useful link-level traffic estimation without traffic-state measurements at prediction time, and transport theory can guide the representation of these relationships in ways that support both prediction and interpretation.</p>
+      </section>
+
+      <section>
+        <h2>Research questions and contributions</h2>
+        <div class="cols">
+          <div class="f55">
+            <div class="rq mk"><span class="tag">RQ1 · Mukara</span>Can highway traffic be estimated from external socioeconomic characteristics and road-network structure without using traffic observations as prediction inputs?</div>
+            <div class="rq dd"><span class="tag">RQ2 · DeepDemand</span>Can a more explicit representation of OD relationships informed by travel-demand theory support prediction and interpretation at a finer road-segment resolution?</div>
+            <div class="rq both"><span class="tag">RQ3 · both models</span>How well do the models generalise geographically, and what can be learned from their fitted internal relationships?</div>
+          </div>
+          <div class="f45">
+            <p class="cat" style="font-size:.72em;">Contributions</p>
+            <ol class="xsmall">
+              <li><strong>Observation-supervised external-input estimation.</strong> Two models learn link volumes from counts, without traffic-state inputs or an observed OD matrix at inference.</li>
+              <li><strong>Explicit test of geographical generalisation.</strong> Region-held-out CV alongside random CV in both studies.</li>
+              <li><strong>Theory-informed OD representation.</strong> OD extraction, route screening, learned interaction and travel-time attenuation, implemented at national scale.</li>
             </ol>
           </div>
         </div>
+        <div class="roadmap">
+          <div class="rm task"><strong>Shared task</strong>Link traffic from socioeconomic context and network structure</div>
+          <div class="rm-arr">→</div>
+          <div class="rm mk"><strong>Mukara</strong>Learn spatial and network representations</div>
+          <div class="rm-arr">→<small>finer network, more explicit demand structure</small></div>
+          <div class="rm dd"><strong>DeepDemand</strong>Represent OD relationships explicitly</div>
+        </div>
+        <p class="caption">Methodological progression (Figure 1.2)</p>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CHAPTER 2                                                    -->
+    <!-- ============================================================ -->
+    <section data-section="Background and literature review" data-prog="Chapter 2 of 6">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Chapter 2</div><h2>Background and literature review</h2>
+        <p class="sub">Four-step TDM · data-driven prediction and estimation · machine learning within the TDM · integrated demand-to-flow modelling</p>
       </section>
 
-      <!-- Step 3 -->
       <section>
-        <h2>Step 3 — Modal split</h2>
+        <h2>The four-step travel demand model</h2>
+        <div class="pipeline">
+          <div class="pbox">Trip generation<span>productions and attractions $O_i,\ D_j$</span></div>
+          <div class="parr">→</div>
+          <div class="pbox">Trip distribution<span>OD matrix $T_{ij}$</span></div>
+          <div class="parr">→</div>
+          <div class="pbox">Mode choice<span>modal matrices $T^{k}_{ij}$</span></div>
+          <div class="parr">→</div>
+          <div class="pbox">Traffic assignment<span>link flows $v_a$</span></div>
+        </div>
+        <div class="feedback"><span>network costs can be fed back to earlier stages</span></div>
         <div class="cols">
-          <div class="col-40">
-            <p class="cat">What shifts the choice</p>
-            <ul style="font-size:.76em;">
-              <li><em>trip-maker:</em> car availability, licence, income, household</li>
-              <li><em>journey:</em> purpose, time of day, travelling alone?</li>
-              <li><em>service:</em> time, fare, parking, reliability, comfort</li>
+          <div>
+            <p class="cat" style="font-size:.7em;">Explicit, inspectable structure</p>
+            <ul class="xsmall">
+              <li>Gravity distribution $T_{ij}=A_iO_iB_jD_j\,f(c_{ij})$. Wilson's entropy derivation gives $f(c_{ij})=\exp(-\beta c_{ij})$.</li>
+              <li>Logit mode choice. User-equilibrium or stochastic user-equilibrium assignment with volume–delay functions.</li>
+              <li>Each intermediate quantity can be compared with its own observations.</li>
             </ul>
           </div>
-          <div class="col-60">
-            <p class="cat">Logit mode choice</p>
-            <p style="font-size:.82em;">the share of mode $k$ falls with its generalised cost $C^{\,k}_{ij}$:</p>
-            $$ P^{\,k}_{ij} = \frac{e^{-\lambda\, C^{\,k}_{ij}}}{\sum_{m} e^{-\lambda\, C^{\,m}_{ij}}} $$
-            <p class="muted" style="font-size:.72em;">$\lambda\!\to\!\infty$ ⇒ everyone picks the cheapest mode ("all-or-nothing").</p>
+          <div>
+            <p class="cat" style="font-size:.7em;">Calibration is not validation</p>
+            <ul class="xsmall">
+              <li>OD matrices are adjusted until assigned flows reproduce counts. Agreement with the same counts measures in-sample calibration.</li>
+              <li>Many OD and route-flow patterns reproduce the same link counts.</li>
+              <li>Local fit is absorbed into a location-specific OD matrix, which cannot normally be transferred. More transferable parameters may be too coarse for link-level flows without local information.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="alert xsmall">Wherever a model is used beyond the network it was calibrated on, it needs validation in places whose counts did not contribute to fitting (Section 2.2).</p>
+      </section>
+
+      <section>
+        <h2>Case study: forecasting with ST-MetaNet</h2>
+        <div class="cols">
+          <div class="f45">
+            <ul class="xsmall">
+              <li>ST-MetaNet on 498 monitored segments of England's trunk-road network. Speed and volume at 15-minute intervals, twelve steps in and twelve out, chronological 70/10/20 split.</li>
+              <li><strong>Blind extrapolation.</strong> Forecasts continue the recent trend smoothly and miss turning points.</li>
+              <li><strong>Error accumulation.</strong> In recursive decoding an early error is carried forward and grows over the horizon.</li>
+              <li><strong>Lag.</strong> A one-step variant (30-minute intervals, six hours of history) follows the daily profile but reproduces abrupt changes only after they enter the input history.</li>
+            </ul>
+            <p class="note xsmall">The forecast is conditional on an observed traffic state. Estimating typical volumes where no traffic history exists is a different task.</p>
+          </div>
+          <div class="f55 center">
+            <img class="fit" style="max-height:215px" src="figures/ch2_stmetanet_accumulation.png" alt="Twelve-step forecast showing error accumulation">
+            <p class="caption">Twelve-step forecast: predicted volume rises while observed volume falls (Figure 2.5)</p>
+            <img class="fit" style="max-height:200px" src="figures/ch2_stmetanet_lag.png" alt="One-step forecast on 4 November 2019">
+            <p class="caption">One-step forecast, 4 November 2019: the drop around 17:00 is reproduced one interval late (Figure 2.6)</p>
           </div>
         </div>
       </section>
 
       <section>
-        <h2>Generalised cost — one number per mode</h2>
-        <p>Each mode bundles time, money and comfort into a common currency — <strong>its own</strong> $C^{\,k}_{ij}$:</p>
-        $$ C^{\,k}_{ij} = a_1\, t^{\,k}_{\text{in-veh}} + a_2\, t^{\,k}_{\text{wait}} + a_3\,\text{fare}^k + a_4\,\text{park}^k + \dots $$
+        <h2>What information is available at prediction time?</h2>
+        <table class="tbl" style="font-size:.6em;">
+          <thead><tr><th style="width:25%">Setting</th><th style="width:34%">Information required at inference</th><th>Representative studies</th></tr></thead>
+          <tbody>
+            <tr><th>Short-term forecasting</th><td>Recent traffic history at the target and neighbouring sensors</td><td>DCRNN, STGCN, STGAT, ST-MetaNet</td></tr>
+            <tr><th>Reconstruction and kriging</th><td>Traffic observations at other locations</td><td>Zhang et al. (2020), IGNNK (Wu et al. 2021)</td></tr>
+            <tr><th>Probe-based estimation</th><td>Probe speeds, with no volume counter at the target</td><td>Sekuła et al. (2018), Hein et al. (2025)</td></tr>
+            <tr><th>External-attribute estimation</th><td>Roadway, socioeconomic and land-use characteristics only</td><td>Sfyridis and Agnolucci (2020, 2023), Das and Tsapakis (2020), van Strien and Grêt-Regamey (2024)</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">Rows run from the weakest to the strongest information constraint (Sections 2.3.6 and 2.3.7)</p>
+        <div class="cols" style="margin-top:.4em;">
+          <div>
+            <ul class="xsmall">
+              <li>External-only estimation has been demonstrated, mostly with engineered predictors attached to count points or network service areas.</li>
+              <li>Network position carries information about volume (routing importance, Morley and Gulliver 2016), but that model also uses the measured AADT of the nearest major road.</li>
+            </ul>
+          </div>
+          <div>
+            <ul class="xsmall">
+              <li>Evaluation ranges from model fit to geographical hold-out. Van Strien and Grêt-Regamey test transfer to countries excluded from calibration.</li>
+              <li>Open: combining external characteristics with learned road-network relationships for link-level prediction, and testing transfer beyond the fitted locations.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Research gap: coverage of the demand-to-flow chain</h2>
+        <div class="chain">
+          <div class="crow">
+            <div></div>
+            <div class="hd">External characteristics</div>
+            <div class="hd">Travel demand and spatial interaction</div>
+            <div class="hd">Network loading</div>
+            <div class="hd">Link traffic</div>
+          </div>
+          <div class="crow">
+            <div class="lab">Learned OD interaction<small>Deep Gravity (Simini et al. 2021)</small></div>
+            <div class="bar" style="grid-column:2 / span 2">Needs origin totals $O_i$. Supervised by observed OD flows. Stops before road assignment.</div>
+          </div>
+          <div class="crow">
+            <div class="lab">Learned assignment<small>Hu and Xie (2025), Liu and Meidani (2024)</small></div>
+            <div class="bar" style="grid-column:4 / span 2">Takes OD demand as input. Supervised by user-equilibrium solutions.</div>
+          </div>
+          <div class="crow">
+            <div class="lab">Joint demand estimation<small>Wu et al. (2018)</small></div>
+            <div class="bar" style="grid-column:2 / span 4">Explicit hierarchy from generation to link flows, with observations at several intermediate levels.</div>
+          </div>
+          <div class="crow">
+            <div class="lab">Simulator surrogates<small>Narayanan et al. (2024), Natterer et al. (2025)</small></div>
+            <div class="bar" style="grid-column:2 / span 4">Learns the input–output response of a transport model. Labels are simulated, not observed.</div>
+          </div>
+          <div class="crow">
+            <div class="lab">External-attribute estimation<small>Section 2.3.6</small></div>
+            <div class="bar gap" style="grid-column:2 / span 4">Observed volumes from engineered predictors. Demand and network relations stay implicit.</div>
+          </div>
+          <div class="crow">
+            <div class="lab" style="color:var(--deep)">This thesis</div>
+            <div class="bar me" style="grid-column:2 / span 4">Observed link counts as supervision. External and network information only at inference. Demand-related structure learned inside the model.</div>
+          </div>
+        </div>
+        <p class="ok xsmall" style="margin-top:.7em;"><strong>Question.</strong> Can more of the demand-to-flow relationship be learned directly from observed link counts, when prediction uses only external characteristics and network structure rather than traffic measurements or a complete observed OD matrix?</p>
+        <p class="caption">After Table 2.3 and Figure 2.7</p>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CHAPTER 3                                                    -->
+    <!-- ============================================================ -->
+    <section data-section="Methodology and data" data-prog="Chapter 3 of 6">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Chapter 3</div><h2>Methodology and data</h2>
+        <p class="sub">Shared prediction task · road-network, socioeconomic and traffic data · evaluation design</p>
+      </section>
+
+      <section>
+        <h2>Shared prediction task</h2>
+        <div class="small eqs">
+          $$\hat{y}_i=f_{\boldsymbol{\theta}}(\mathcal{X},\mathcal{G};\,i),\qquad \widehat{\boldsymbol{\theta}}=\arg\min_{\boldsymbol{\theta}}\frac{1}{\lvert\mathcal{I}_{\mathrm{train}}\rvert}\sum_{i\in\mathcal{I}_{\mathrm{train}}}\ell\big(y_i,\,f_{\boldsymbol{\theta}}(\mathcal{X},\mathcal{G};\,i)\big)$$
+        </div>
+        <div class="cols">
+          <div class="f40">
+            <ul class="xsmall">
+              <li>$\mathcal{G}=(\mathcal{V},\mathcal{E})$ is the directed road network. $\mathcal{X}$ collects the external socioeconomic, land-use and road-network inputs.</li>
+              <li>Observed counts $y_i$ enter only the training loss and the held-out evaluation.</li>
+              <li>Mukara and DeepDemand differ in how they represent $\mathcal{X}$ and $\mathcal{G}$.</li>
+            </ul>
+          </div>
+          <div class="f60">
+            <table class="tbl" style="font-size:.56em;">
+              <thead><tr><th></th><th>Mukara</th><th>DeepDemand</th></tr></thead>
+              <tbody>
+                <tr><th>Prediction unit</th><td>Directed trunk-road segment in a year, $i=(t,e)$</td><td>Directed road edge, $i=e$</td></tr>
+                <tr><th>Traffic period</th><td>2015–2022</td><td>2017–2024</td></tr>
+                <tr><th>Target</th><td>Mean weekday daily volume, per year</td><td>Median of annual AADT across valid years</td></tr>
+                <tr><th>Temporal exclusions</th><td>Weekends and bank holidays</td><td>Annual AADT from valid daily observations</td></tr>
+                <tr><th>Target edges</th><td>498</td><td>5,088</td></tr>
+                <tr><th>Traffic input at prediction</th><td>None</td><td>None</td></tr>
+              </tbody>
+            </table>
+            <p class="caption">After Table 3.2. Both targets are in vehicles per day.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Data sources</h2>
+        <table class="tbl" style="font-size:.55em;">
+          <thead><tr><th>Source</th><th>Coverage</th><th>Mukara</th><th>DeepDemand</th></tr></thead>
+          <tbody>
+            <tr><th>National Highways SRN</th><td>England</td><td>Compact interurban trunk-road network</td><td>Monitored highway system holding the targets</td></tr>
+            <tr><th>OpenStreetMap</th><td>Great Britain</td><td>Land use, road context and POIs</td><td>National driving network, land use and POIs</td></tr>
+            <tr><th>ONS population estimates</th><td>England and Wales</td><td>Annual rasterised population</td><td>LSOA demographic features</td></tr>
+            <tr><th>Business Register and Employment Survey</th><td>England and Wales</td><td>Annual rasterised employment</td><td>LSOA employment features</td></tr>
+            <tr><th>Census 2021</th><td>England and Wales</td><td>–</td><td>Household composition, car or van availability</td></tr>
+            <tr><th>Deprivation data (2019)</th><td>England and Wales</td><td>–</td><td>Income and employment deprivation</td></tr>
+            <tr><th>Google Routes API</th><td>Mukara segments</td><td>Segment travel and geometric attributes</td><td>–</td></tr>
+            <tr><th>National Highways TRIS</th><td>England SRN</td><td>Targets on 498 directed segments</td><td>Targets on 5,088 directed edges</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">After Table 3.1. Small-area statistics use the Lower Layer Super Output Area (LSOA) geography.</p>
+        <div class="cols" style="margin-top:.35em;">
+          <div class="center"><img class="fit" style="max-height:170px" src="figures/ch3_pop_emp.jpg" alt="Population and employment grids"><p class="caption">Population and employment on the 1 km grid (Figure 4.5)</p></div>
+          <div class="center"><img class="fit" style="max-height:170px" src="figures/ch3_landuse_poi.jpg" alt="Land-use, road and POI grids"><p class="caption">Land-use, road-network and POI channels (Figure 4.6)</p></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Evaluation design and metrics</h2>
+        <div class="cols">
+          <div class="f55">
+            <div class="card" style="margin-bottom:.45em;">
+              <h4>Random CV (five folds)</h4>
+              <p>Held-out target edges spread across the network. Mukara keeps every year of an edge in the same fold. DeepDemand splits target edges 70/10/20 into training, validation and test sets.</p>
+            </div>
+            <div class="card">
+              <h4>Spatial CV (nine folds)</h4>
+              <p>Each official region of England is held out in turn. The test region contributes no traffic counts to fitting. DeepDemand draws its validation set from the other eight regions.</p>
+            </div>
+            <ul class="xsmall">
+              <li>All models in a study share the same partitions. Results are means (standard deviations) across folds.</li>
+              <li>Both schemes test spatial estimation. Neither tests future-year forecasting or the response to an intervention.</li>
+            </ul>
+          </div>
+          <div class="f45">
+            <div class="card">
+              <h4>Metrics</h4>
+              <div class="xsmall">
+                $$\mathrm{MAE}=\tfrac{1}{n}\textstyle\sum_i\lvert y_i-\hat{y}_i\rvert\quad\text{(vehicles per day)}$$
+                $$R^2=1-\frac{\sum_i(y_i-\hat{y}_i)^2}{\sum_i(y_i-\bar{y})^2}$$
+                $$\mathrm{wMAPE}=100\,\frac{\sum_i\lvert y_i-\hat{y}_i\rvert}{\sum_i y_i}$$
+                $$\mathrm{GEH}_i=\sqrt{\frac{2(y_i-\hat{y}_i)^2}{y_i+\hat{y}_i}},\qquad \mathrm{MGEH}=\tfrac{1}{n}\textstyle\sum_i\mathrm{GEH}_i$$
+              </div>
+            </div>
+            <p class="xsmall muted">GEH depends on the flow period. The usual references of 5 and 10 apply to hourly flows (Backup).</p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CHAPTER 4: MUKARA                                            -->
+    <!-- ============================================================ -->
+    <section data-section="Mukara" data-prog="Chapter 4 of 6">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Chapter 4</div><h2>Mukara</h2>
+        <p class="sub">RQ1 · Can highway traffic be estimated from external socioeconomic characteristics and road-network structure without using traffic observations as prediction inputs?</p>
+      </section>
+
+      <section>
+        <h2>Mukara: objectives and data</h2>
+        <div class="cols">
+          <div class="f60">
+            <p class="xsmall">First test of the prediction setting, with deliberately limited theory structure: no OD pairs, OD matrix or route assignment. The name derives from the Japanese for “from nothing”, as no sensor history is an input.</p>
+            <p class="cat" style="font-size:.68em;">Objectives</p>
+            <ol class="xsmall">
+              <li>Estimate national highway traffic from socioeconomic characteristics and network structure.</li>
+              <li>Evaluate accuracy and spatial generalisation against baselines.</li>
+              <li>Examine the contributions of spatial context, network propagation and feature groups.</li>
+            </ol>
+            <p class="cat" style="font-size:.68em;">Data</p>
+            <ul class="xsmall">
+              <li>Trunk-road graph: 181 junction nodes, 498 directed edges (249 connections in both directions).</li>
+              <li>One representative TRIS sensor per edge, chosen from 3,984 candidates by topology and data availability.</li>
+              <li>1 km grids: population and employment for 2015–2022, plus four land-use, three road-level and five POI channels.</li>
+              <li>Five Google Routes API edge features: duration, distance, straight-line distance, speed, detour factor.</li>
+              <li>Target: mean weekday daily traffic per edge and year (8 × 498 edge–year observations).</li>
+            </ul>
+          </div>
+          <div class="f40 center">
+            <img class="fit" style="max-height:470px" src="figures/ch4_traffic_map.jpg" alt="Mean weekday daily traffic on the 498 segments">
+            <p class="caption">Mean weekday daily traffic, 2015–2022 (Figure 4.8)</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Mukara: CNN encoder and edge-aware graph attention</h2>
+        <div class="cols">
+          <div class="f55 center">
+            <img class="fit" style="max-height:215px" src="figures/ch4_cnn_block.png" alt="Mukara CNN block">
+            <p class="caption">CNN block: a region of interest around each junction becomes a node embedding (Figure 4.9)</p>
+            <img class="fit" style="max-height:235px" src="figures/ch4_gat_block.png" alt="Mukara GAT block">
+            <p class="caption">GAT block: embeddings propagate over the trunk-road graph, then an MLP predicts each edge (Figure 4.10)</p>
+          </div>
+          <div class="f45">
+            <p class="xsmall"><strong>Node context from the grid</strong></p>
+            <div class="xsmall eqs">$$\mathbf{h}^{(0)}_{v_i}=\mathrm{Flatten}\big[(\mathrm{Pool}\circ\mathrm{ReLU}\circ\mathrm{Conv})^{L_{\mathrm{CNN}}}(\mathrm{ROI}_{v_i})\big]$$</div>
+            <p class="xsmall"><strong>Edge-aware attention</strong>, per layer and head</p>
+            <div class="xsmall eqs">$$z_{ij}=\mathrm{LeakyReLU}\big[\mathbf{a}^{\top}\big(\mathbf{W}_v\mathbf{h}_{v_i}\Vert\mathbf{W}_v\mathbf{h}_{v_j}\Vert\mathbf{W}_e\mathbf{h}_{e_{ij}}\big)\big]$$</div>
+            <p class="xsmall"><strong>Edge prediction</strong></p>
+            <div class="xsmall eqs">$$\hat{y}_{t,e}=\mathrm{MLP}_{\mathrm{pred}}\big(\mathbf{h}^{(L)}_{v_i}\Vert\mathbf{h}^{(L)}_{v_j}\Vert\mathbf{h}_e\big)$$</div>
+            <ul class="xsmall">
+              <li>Loss: mean GEH over training edges. Each batch holds the whole network for one year.</li>
+              <li>25 km region of interest, three convolutional layers (16, 32, 64 channels), five GAT layers, four heads, $d=16$.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Mukara: prediction and spatial evaluation</h2>
+        <table class="tbl" style="font-size:.58em;">
+          <thead>
+            <tr><th rowspan="2" style="vertical-align:bottom">Model</th><th colspan="3" class="grp">Random CV (five folds)</th><th colspan="3" class="grp">Spatial CV (nine regions)</th></tr>
+            <tr><th class="n sub">MGEH</th><th class="n sub">MAE</th><th class="n sub">$R^2$</th><th class="n sub bl">MGEH</th><th class="n sub">MAE</th><th class="n sub">$R^2$</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Global mean</td><td class="n">102.31</td><td class="n">19,708</td><td class="n">0</td><td class="n bl">105.27</td><td class="n">20,413</td><td class="n">$\lt 0$</td></tr>
+            <tr><td>Gravity model</td><td class="n">84.23</td><td class="n">14,836</td><td class="n">0.342</td><td class="n bl">93.18</td><td class="n">16,925</td><td class="n">0.201</td></tr>
+            <tr><td>Ridge regression</td><td class="n">75.64</td><td class="n">12,942</td><td class="n">0.463</td><td class="n bl">86.72</td><td class="n">15,109</td><td class="n">0.302</td></tr>
+            <tr><td>Random forest</td><td class="n">71.38</td><td class="n">12,319</td><td class="n">0.504</td><td class="n bl">81.54</td><td class="n">14,216</td><td class="n">0.361</td></tr>
+            <tr class="hl-mk"><td>Mukara</td><td class="n">50.74</td><td class="n">8,989</td><td class="n">0.583</td><td class="n bl">57.63</td><td class="n">9,955</td><td class="n">0.521</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">Means across folds (Table 4.7). MAE in vehicles per day.</p>
+        <div class="cols mid" style="margin-top:.3em;">
+          <div class="f55 center">
+            <img class="fit" style="max-height:265px" src="figures/ch4_yyhat.png" alt="Predicted against observed traffic">
+            <p class="caption">Predicted against observed volume, first CV fold (Figure 4.13)</p>
+          </div>
+          <div class="f45">
+            <ul class="xsmall">
+              <li>$R^2$ falls only from 0.583 to 0.521 when whole regions are withheld. Every baseline deteriorates more.</li>
+              <li>MAE is 26.6% of the mean observed volume of 33,735 vehicles per day.</li>
+              <li>Errors are largest at the lowest and highest volumes. Error maps show local over- and under-prediction without a regional pattern.</li>
+              <li>Regional totals under spatial CV lie within ±6% of observed totals, the national total within 0.6%.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Mukara: what contributes to prediction</h2>
+        <div class="cols">
+          <div>
+            <p class="cat" style="font-size:.68em;">Architecture</p>
+            <img class="fit" style="max-height:195px" src="figures/ch4_gat_depth.png" alt="Test error by GAT depth">
+            <p class="caption">Test MGEH and MAE by GAT depth (Figure 4.12)</p>
+            <ul class="xsmall">
+              <li>Edge features alone carry limited information. Endpoint embeddings add local context.</li>
+              <li>Full graph propagation improves further. Five or six GAT layers perform best, and deeper models deteriorate.</li>
+              <li>Ridge and random forest under spatial CV perform like the variant without GAT layers, so the gain is consistent with multi-hop propagation.</li>
+            </ul>
+          </div>
+          <div>
+            <p class="cat" style="font-size:.68em;">Feature groups</p>
+            <img class="fit" style="max-height:195px" src="figures/ch4_radar_overall.png" alt="Change in error when feature groups are removed">
+            <p class="caption">Change in MGEH (red) and MAE (blue) when one group is removed, % (Figure 4.16)</p>
+            <ul class="xsmall">
+              <li>Removing land use causes the largest increase in error.</li>
+              <li>Stratified employment improves on aggregate employment. Removing employment reduces error in some settings, which indicates overlap with other inputs.</li>
+              <li>Robust under spatial CV ($R^2$): 2019 OSM snapshot 0.517, all days 0.533, MSE, MAE or Huber loss 0.519–0.523 (Backup).</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>From Mukara to DeepDemand</h2>
+        <div class="cols">
+          <div class="f45">
+            <p class="cat" style="font-size:.68em;">Scope of the Mukara result</p>
+            <ul class="xsmall">
+              <li>Predictive, not causal. The feature analyses measure predictive contribution only.</li>
+              <li>498 monitored segments. Repeated years add examples but not locations.</li>
+              <li>One 2023 OSM snapshot serves all study years.</li>
+              <li>Transfer tested within England only. No temporal extrapolation, congestion or mode-shift response.</li>
+              <li>A heteroscedastic Gaussian extension trained less stably and raised MAE from about 9,000 to about 12,000 vehicles per day, so point prediction is kept.</li>
+            </ul>
+          </div>
+          <div class="f55">
+            <p class="cat" style="font-size:.68em;">Representational limits and the DeepDemand response</p>
+            <table class="tbl" style="font-size:.58em;">
+              <thead><tr><th style="width:55%">Limit of Mukara</th><th>DeepDemand</th></tr></thead>
+              <tbody>
+                <tr><td>Long trunk-road connections between major junctions hide variation near junctions and slip roads</td><td>Detailed national driving network with 5,088 target edges</td></tr>
+                <tr><td>Square raster windows: proximity is not accessibility, and rasterising changes the LSOA geography</td><td>LSOAs kept as units, reached through network travel time</td></tr>
+                <tr><td>Graph propagation does not identify which OD movements use the target edge</td><td>Explicit OD pairs, screened by shortest paths through the edge</td></tr>
+              </tbody>
+            </table>
+            <p class="caption">Sections 4.5.4 and 5.2</p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CHAPTER 5: DEEPDEMAND                                        -->
+    <!-- ============================================================ -->
+    <section data-section="DeepDemand" data-prog="Chapter 5 of 6">
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Chapter 5</div><h2>DeepDemand</h2>
+        <p class="sub">RQ2 · Can a more explicit representation of OD relationships informed by travel-demand theory support prediction and interpretation at a finer road-segment resolution?</p>
+      </section>
+
+      <section>
+        <h2>DeepDemand: theory-informed design</h2>
+        <div class="cols">
+          <div class="f45">
+            <p class="xsmall">Two methodological developments:</p>
+            <ol class="xsmall">
+              <li><strong>Network preprocessing.</strong> A competitive two-source Dijkstra search extracts origin and destination regions for each target edge. Shortest-path screening keeps the OD pairs whose shortest route uses the edge.</li>
+              <li><strong>Differentiable model.</strong> Learns a non-negative OD interaction score and a travel-time attenuation for every screened pair, and sums their contributions into a link volume.</li>
+            </ol>
+            <p class="note xsmall">Trained end to end on observed link volumes. No observed OD flows are used, so the learned OD scores are model-derived quantities, not trip counts.</p>
+          </div>
+          <div class="f55">
+            <table class="tbl" style="font-size:.58em;">
+              <thead><tr><th style="width:36%">Travel-demand concept</th><th>DeepDemand component</th></tr></thead>
+              <tbody>
+                <tr><td>Trip generation and attraction</td><td>Separate origin and destination encoders $f_{\mathrm{O}},\ f_{\mathrm{D}}$</td></tr>
+                <tr><td>Spatial interaction</td><td>OD interaction score $s_{od}$ from $f_{\mathrm{OD}}$</td></tr>
+                <tr><td>Deterrence function</td><td>Learned travel-time attenuation $p_{od}$ from $f_{\mathrm{t}}$</td></tr>
+                <tr><td>Traffic assignment</td><td>Shortest-path screening, then summation over the screened pairs $\mathcal{P}_{e^\star}$. Assignment-like, not an equilibrium.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="pipeline" style="margin-top:.9em;">
+          <div class="pbox" style="font-size:.56em">Network and LSOA features</div><div class="parr">→</div>
+          <div class="pbox" style="font-size:.56em">OD region extraction</div><div class="parr">→</div>
+          <div class="pbox" style="font-size:.56em">OD pair screening</div><div class="parr">→</div>
+          <div class="pbox" style="font-size:.56em">Differentiable model</div><div class="parr">→</div>
+          <div class="pbox" style="font-size:.56em">Evaluation and interpretation</div>
+        </div>
+        <p class="caption">Framework stages (Figure 5.1)</p>
+      </section>
+
+      <section>
+        <h2>Design decisions from methodological development</h2>
+        <table class="tbl" style="font-size:.54em;">
+          <thead><tr><th style="width:27%">Alternative explored</th><th style="width:44%">Observation</th><th>Final choice</th></tr></thead>
+          <tbody>
+            <tr><td>Keep only major road classes</td><td>Truncated connections at junctions and slip roads, distorted travel-time surfaces</td><td>Full drivable network</td></tr>
+            <tr><td>Raw OSM segments as targets</td><td>Targets depend on digitisation and duplicate one another</td><td>Simplified graph between junctions</td></tr>
+            <tr><td>GNN on the full national graph</td><td>Millions of nodes for few targets, deep propagation, oversmoothing</td><td>Target-specific computation</td></tr>
+            <tr><td>Local subgraphs, shortest-path-tree aggregation</td><td>Reachability does not show that travel between two areas uses the target edge</td><td>Explicit OD pairs with route screening</td></tr>
+            <tr><td>Independent origin and destination searches</td><td>The two regions overlap as the horizon grows</td><td>Competitive two-source expansion</td></tr>
+            <tr><td>Learned spatial clustering</td><td>Unstable across runs, no consistent gain</td><td>Network accessibility as spatial structure</td></tr>
+            <tr><td>Softmax attention over OD pairs</td><td>The weight of a pair depends on the other pairs of the edge</td><td>Independent attenuation per pair</td></tr>
+            <tr><td>Relaxed screening (within 1.2 × shortest time)</td><td>Many weakly related pairs, especially around slip roads</td><td>Exact shortest-path criterion</td></tr>
+            <tr><td>MLP aggregation</td><td>Unstable optimisation. A learned power $S^{a}$ converged to $a$ of about 0.41</td><td>Fixed square root, $\sqrt{S}$</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">Section 5.3.2. The findings concern the tested designs under link-count supervision and do not rule out other GNN formulations.</p>
+      </section>
+
+      <section>
+        <h2>Network, features and targets</h2>
+        <div class="cols">
+          <div class="f45">
+            <ul class="xsmall">
+              <li><strong>Driving network.</strong> OpenStreetMap Great Britain, 1 January 2025. All drivable roads kept, then simplified to about 6.3 million nodes and 7.2 million directed edges. Free-flow travel time from the posted speed limit, or a road-class fallback speed.</li>
+              <li><strong>LSOA features.</strong> 121 variables on population, employment, households and car availability, deprivation, land use and POIs, standardised and reduced to 64 principal components. Each LSOA is attached to the node nearest its population-weighted centroid.</li>
+              <li><strong>Targets.</strong> TRIS sensors matched within 10 m to motorway, trunk and link edges. Annual AADT for 2017–2024 from sensor-years with at least 200 valid observations. Median across sensors, then across years.</li>
+              <li><strong>5,088 target edges.</strong> Mean AADT 25,243, standard deviation 18,893, maximum 113,436 vehicles per day.</li>
+            </ul>
+          </div>
+          <div class="f55 center">
+            <img class="fit" style="max-height:370px" src="figures/ch5_traffic_targets.jpg" alt="Observed AADT targets">
+            <p class="caption">Observed AADT: map, distributions by road type and day-to-day variability (Figure 5.5)</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Target-specific OD extraction and screening</h2>
+        <div class="cols">
+          <div class="f55 center">
+            <img class="fit" style="max-height:430px" src="figures/ch5_isochrone.jpg" alt="Competitive OD extraction and pair screening">
+            <p class="caption">(a) Competitive expansion, shown with a 20-minute cutoff. (b) A retained pair. (c) An excluded pair (Figure 5.7)</p>
+          </div>
+          <div class="f45">
+            <ul class="xsmall">
+              <li><strong>Competitive two-source Dijkstra.</strong> From $e^\star=(u,v)$, search backward from $u$ for origins and forward from $v$ for destinations with one shared priority queue. The first search to reach a node claims it, so $\mathcal{O}_{e^\star}$ and $\mathcal{D}_{e^\star}$ do not overlap.</li>
+              <li><strong>Cutoff</strong> $\tau_{\max}=60$ min on each side. In the NTS 2017–2024 (985,676 car trips), 3.7% of weighted car trips exceed 60 minutes.</li>
+              <li><strong>Screening.</strong> Keep $(o,d)$ only if a shortest route passes through the edge:
+                $$\tau_{\mathrm{O}}(o)+\tau_{e^\star}+\tau_{\mathrm{D}}(d)=\tau_{\mathrm{OD}}(o,d)$$</li>
+              <li><strong>National scale.</strong> Compressed sparse row network (about 187 MB), compiled Dijkstra kernels, cached shortest-path trees and parallel workers. All 5,088 edges in about 33 minutes, 1.64 billion screened pairs across target edges.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Differentiable demand-to-flow model</h2>
+        <div class="cols mid">
+          <div class="f40 center">
+            <img class="fit" style="max-height:430px" src="figures/ch5_dl_arch.png" alt="DeepDemand architecture">
+            <p class="caption">Figure 5.8</p>
+          </div>
+          <div class="f60">
+            <div class="small">
+              $$\mathbf{h}_o=f_{\mathrm{O}}\big(\mathbf{x}^{(v)}_o\big),\qquad \mathbf{h}_d=f_{\mathrm{D}}\big(\mathbf{x}^{(v)}_d\big)$$
+              $$s_{od}=\mathrm{Softplus}\big(f_{\mathrm{OD}}([\mathbf{h}_o\Vert\mathbf{h}_d])\big)\ \ge 0$$
+              $$p_{od}=\sigma\big(f_{\mathrm{t}}(\tilde{\tau}_{od})\big)\in(0,1),\qquad \tilde{\tau}_{od}=\frac{\tau_{\mathrm{OD}}(o,d)-\bar{\tau}}{s_{\tau}}$$
+              $$S_{e^\star}=\sum_{(o,d)\in\mathcal{P}_{e^\star}}s_{od}\,p_{od},\qquad \hat{y}_{e^\star}=\gamma\sqrt{S_{e^\star}}$$
+            </div>
+            <ul class="xsmall">
+              <li>$f_{\mathrm{O}}$, $f_{\mathrm{D}}$, $f_{\mathrm{OD}}$ and $f_{\mathrm{t}}$ are small MLPs trained jointly. $\bar{\tau}=3600$ s, $s_{\tau}=1000$ s, $\gamma=100$.</li>
+              <li>Each pair contributes independently. There is no softmax over pairs.</li>
+              <li>Mean squared error loss. AdamW with staged learning rates $3\times10^{-3}$, $10^{-3}$ and $3\times10^{-4}$, early stopping on validation MGEH.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Predictive performance and spatial generalisation</h2>
+        <div class="cols">
+          <div class="f60 center">
+            <img class="fit" src="figures/ch5_eval_scatter.png" alt="Predicted against observed AADT">
+            <p class="caption">Predicted against observed AADT, training (a) and test (b) edges, first random-CV fold (Figure 5.9)</p>
+            <ul class="xsmall" style="text-align:left;">
+              <li>Training and test performance are similar, which indicates limited overfitting.</li>
+              <li>Accuracy is similar across motorway, trunk and link roads, so nearby carriageways and slip roads with very different volumes are distinguished.</li>
+            </ul>
+          </div>
+          <div class="f40">
+            <table class="tbl" style="font-size:.58em;">
+              <thead><tr><th></th><th class="n">Random CV</th><th class="n">Spatial CV</th></tr></thead>
+              <tbody>
+                <tr class="hl-dd"><td>Test $R^2$</td><td class="n">0.706</td><td class="n">0.647</td></tr>
+                <tr><td>MAE (veh/day)</td><td class="n">7,567</td><td class="n">7,885</td></tr>
+                <tr><td>wMAPE</td><td class="n">30.0%</td><td class="n">31.1%</td></tr>
+                <tr><td>MGEH</td><td class="n">56.08</td><td class="n">58.00</td></tr>
+              </tbody>
+            </table>
+            <img class="fit" style="max-height:230px; margin-top:.4em;" src="figures/ch5_region_r2.png" alt="Test R squared by held-out region">
+            <p class="caption">Test $R^2$ by held-out region, 0.443 to 0.772. Dotted line: random-CV mean (Figure 5.11)</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Baseline comparison: representation matters</h2>
+        <div class="cols">
+          <div class="f60">
+            <table class="tbl" style="font-size:.5em;">
+              <thead>
+                <tr><th rowspan="2" style="vertical-align:bottom">Model</th><th rowspan="2" style="vertical-align:bottom">Input</th><th colspan="3" class="grp">Random CV</th><th colspan="3" class="grp">Spatial CV</th></tr>
+                <tr><th class="n sub">MGEH</th><th class="n sub">MAE</th><th class="n sub">$R^2$</th><th class="n sub bl">MGEH</th><th class="n sub">MAE</th><th class="n sub">$R^2$</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Mean</td><td>none</td><td class="n">96.77</td><td class="n">15,171</td><td class="n">−0.001</td><td class="n bl">97.45</td><td class="n">15,402</td><td class="n">−0.097</td></tr>
+                <tr><td>Linear regression</td><td>OD-structured</td><td class="n">89.69</td><td class="n">14,350</td><td class="n">−0.003</td><td class="n bl">93.15</td><td class="n">14,956</td><td class="n">−0.119</td></tr>
+                <tr><td>Ridge regression</td><td>OD-structured</td><td class="n">89.38</td><td class="n">14,141</td><td class="n">0.062</td><td class="n bl">93.15</td><td class="n">14,876</td><td class="n">−0.094</td></tr>
+                <tr><td>Gravity (log-linear)</td><td>screened pairs</td><td class="n">65.46</td><td class="n">9,379</td><td class="n">0.546</td><td class="n bl">66.50</td><td class="n">9,521</td><td class="n">0.486</td></tr>
+                <tr class="dim"><td>Random forest</td><td>pooled</td><td class="n">90.34</td><td class="n">14,195</td><td class="n">0.113</td><td class="n bl">92.03</td><td class="n">14,534</td><td class="n">0.008</td></tr>
+                <tr><td>Random forest</td><td>OD-structured</td><td class="n">57.68</td><td class="n">8,659</td><td class="n">0.623</td><td class="n bl">66.37</td><td class="n">10,318</td><td class="n">0.445</td></tr>
+                <tr class="dim"><td>XGBoost</td><td>pooled</td><td class="n">90.02</td><td class="n">14,141</td><td class="n">0.115</td><td class="n bl">92.04</td><td class="n">14,514</td><td class="n">0.003</td></tr>
+                <tr><td>XGBoost</td><td>OD-structured</td><td class="n">53.23</td><td class="n">7,975</td><td class="n">0.656</td><td class="n bl">63.16</td><td class="n">9,776</td><td class="n">0.458</td></tr>
+                <tr class="dim"><td>LightGBM</td><td>pooled</td><td class="n">89.57</td><td class="n">14,042</td><td class="n">0.130</td><td class="n bl">91.91</td><td class="n">14,493</td><td class="n">0.005</td></tr>
+                <tr><td>LightGBM</td><td>OD-structured</td><td class="n">51.14</td><td class="n">7,652</td><td class="n">0.678</td><td class="n bl">61.26</td><td class="n">9,487</td><td class="n">0.481</td></tr>
+                <tr><td>GAT</td><td>local graph</td><td class="n">72.39</td><td class="n">11,102</td><td class="n">0.402</td><td class="n bl">74.35</td><td class="n">11,552</td><td class="n">0.319</td></tr>
+                <tr class="hl-dd"><td>DeepDemand</td><td>screened pairs</td><td class="n">56.08</td><td class="n">7,567</td><td class="n">0.706</td><td class="n bl">58.00</td><td class="n">7,885</td><td class="n">0.647</td></tr>
+              </tbody>
+            </table>
+            <p class="caption">Means across folds on identical partitions (Table 5.4). Pooled: one catchment average, without origin–destination separation or screening.</p>
+          </div>
+          <div class="f40">
+            <ul class="xsmall">
+              <li>The same tree learners rise from $R^2$ 0.11–0.13 with pooled features to 0.62–0.68 with OD-structured features. The OD representation carries much of the signal.</li>
+              <li>The trees fit training edges almost exactly (training $R^2$ 0.93–0.98) and lose the most when whole regions are held out. DeepDemand: training 0.73, test 0.706 and 0.647.</li>
+              <li>The gravity model is restrictive but transfers stably, from 0.546 to 0.486.</li>
+              <li>A GAT on the unscreened local graph, as tested, does not recover this structure.</li>
+              <li>Boosted trees reach a lower MGEH under random CV, so the metrics do not rank the models identically.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Component ablation</h2>
+        <table class="tbl" style="font-size:.6em;">
+          <thead>
+            <tr><th rowspan="2" style="vertical-align:bottom">Variant (one component replaced)</th><th colspan="2" class="grp">Random CV</th><th colspan="2" class="grp">Spatial CV</th></tr>
+            <tr><th class="n sub">MGEH</th><th class="n sub">$R^2$ (change)</th><th class="n sub bl">MGEH</th><th class="n sub">$R^2$ (change)</th></tr>
+          </thead>
+          <tbody>
+            <tr class="hl-dd"><td>DeepDemand, full model</td><td class="n">56.08</td><td class="n">0.706</td><td class="n bl">58.00</td><td class="n">0.647</td></tr>
+            <tr><td>No OD pair screening</td><td class="n">57.86</td><td class="n">0.670 (−0.036)</td><td class="n bl">60.74</td><td class="n">0.596 (−0.051)</td></tr>
+            <tr><td>No competitive partition and no screening</td><td class="n">60.52</td><td class="n">0.639 (−0.067)</td><td class="n bl">63.55</td><td class="n">0.548 (−0.099)</td></tr>
+            <tr><td>Shared origin and destination encoder</td><td class="n">56.13</td><td class="n">0.709 (+0.003)</td><td class="n bl">57.75</td><td class="n">0.645 (−0.002)</td></tr>
+            <tr><td>Constant travel-time attenuation</td><td class="n">60.62</td><td class="n">0.659 (−0.047)</td><td class="n bl">66.46</td><td class="n">0.503 (−0.144)</td></tr>
+            <tr><td>Linear aggregation instead of $\sqrt{S}$</td><td class="n">69.50</td><td class="n">0.624 (−0.081)</td><td class="n bl">76.03</td><td class="n">0.445 (−0.202)</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">Table 5.6. Each variant is retrained under the same protocol.</p>
+        <div class="cols" style="margin-top:.5em;">
+          <div>
+            <ul class="xsmall">
+              <li>Competitive partitioning and screening make separate contributions.</li>
+              <li>Learned attenuation and the sublinear readout matter most, and their removal costs more under spatial CV. The structure supports geographical transfer as well as fit.</li>
+            </ul>
+          </div>
+          <div>
+            <ul class="xsmall">
+              <li>Separate origin and destination encoders do not improve accuracy. A shared encoder is a legitimate simplification. The separation is kept because it organises the model and its interpretation.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Interpretation: learned travel-time attenuation</h2>
+        <img class="fit" style="max-height:300px" src="figures/ch5_attenuation_mean.png" alt="Learned travel-time attenuation">
+        <p class="caption">Attenuation $p_{od}$ against OD travel time: mean over random-CV folds and range across folds (Figure 5.13)</p>
         <div class="cols" style="margin-top:.3em;">
           <div>
-            <p style="font-size:.82em;">this is the cost $c_{ij}$ that feeds the deterrence in distribution — and it <strong>differs by mode</strong>.</p>
+            <ul class="xsmall">
+              <li>Nearly flat below about 15 minutes, then falls from about 0.97 to 0.09 between 15 and 45 minutes.</li>
+              <li>Plateaus near 0.05 beyond 45 to 50 minutes and rises slightly to about 0.07 at 90 to 120 minutes.</li>
+              <li>An MLP outperformed linear-logit and exponential-decay forms for $f_{\mathrm{t}}$.</li>
+            </ul>
           </div>
           <div>
-            <p class="cat">Composite cost across modes</p>
-            <p style="font-size:.8em;">one "best of all modes" cost (the log-sum): &nbsp; $K_{ij} = -\tfrac{1}{\lambda}\log \sum_k e^{-\lambda C^{\,k}_{ij}}$</p>
-            <p class="muted" style="font-size:.72em;">$K_{ij}\le \min_k C^{\,k}_{ij}$; closes the loop back to distribution.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Step 4 -->
-      <section>
-        <h2>Step 4 — Trip assignment</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>Load the OD matrix onto real routes and count the flow on each link.</p>
-            <p class="cat">All-or-nothing</p>
-            <p style="font-size:.82em;">put every OD flow on its single shortest path — simple, one pass.</p>
-            <p class="alert" style="font-size:.82em;">But a road's cost <em>rises</em> with its flow. Realistic assignment needs an <strong>equilibrium</strong>: cost depends on flow, flow depends on cost.</p>
-          </div>
-          <div class="col-40 center vh">
-            <svg viewBox="0 0 240 150" width="94%">
-              <path d="M46,72 Q120,26 194,72" fill="none" stroke="#003E74" stroke-width="3"/>
-              <path d="M46,84 Q120,132 194,84" fill="none" stroke="#003E74" stroke-width="3"/>
-              <circle cx="30" cy="78" r="17" fill="#4682B4"/><text x="30" y="83" text-anchor="middle" fill="#fff" font-size="15">o</text>
-              <circle cx="210" cy="78" r="17" fill="#006E5A"/><text x="210" y="83" text-anchor="middle" fill="#fff" font-size="15">d</text>
-              <text x="120" y="34" text-anchor="middle" font-size="11" fill="#5b6b7a">route 1</text>
-              <text x="120" y="130" text-anchor="middle" font-size="11" fill="#5b6b7a">route 2</text>
-            </svg>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2>User equilibrium (UE) vs stochastic UE (SUE)</h2>
-        <div class="cols">
-          <div>
-            <p class="cat">User equilibrium — Wardrop</p>
-            <p style="font-size:.85em;">travellers know costs exactly; no one can cut their travel time by switching route.</p>
-            <p style="font-size:.85em;">⇒ every <em>used</em> route between $i,j$ has equal, minimal cost.</p>
-          </div>
-          <div>
-            <p class="cat">Stochastic user equilibrium</p>
-            <p style="font-size:.85em;">travellers act on <em>perceived</em> (noisy) costs; no one can cut their <em>perceived</em> cost by switching.</p>
-            <p style="font-size:.85em;">⇒ routes chosen probabilistically (logit / probit); UE is the zero-noise limit.</p>
-          </div>
-        </div>
-        <p class="note" style="font-size:.82em;">Both iterate <em>load</em> ⇄ <em>update link costs</em> until flows stop changing — the congested, self-consistent solution.</p>
-      </section>
-
-      <section>
-        <h2>The four-step model: honest balance sheet</h2>
-        <div class="cols">
-          <table>
-            <thead><tr><th style="background:var(--deep)">Strengths</th></tr></thead>
-            <tbody>
-              <tr><td>Interpretable at every step</td></tr>
-              <tr><td>Behaviourally grounded</td></tr>
-              <tr><td>Trusted by institutions</td></tr>
-              <tr><td>Transparent policy levers</td></tr>
-            </tbody>
-          </table>
-          <table>
-            <thead><tr><th style="background:var(--mag)">Limitations</th></tr></thead>
-            <tbody>
-              <tr><td>Steps assumed independent</td></tr>
-              <tr><td>Heavy manual calibration per city</td></tr>
-              <tr><td>Coarse zones, fixed impedance</td></tr>
-              <tr><td>Poor under genuinely new scenarios</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="note">It gives us the <strong>vocabulary</strong> (generation, distribution, deterrence, assignment). Later I keep the vocabulary but let the computer <em>learn</em> each piece.</p>
-      </section>
-    </section>
-
-    <!-- ============================================================ -->
-    <section data-section="A toolbox: machine learning &amp; deep learning">
-      <section class="section-divider" data-background-color="#003E74">
-        <div class="kicker">Part 3</div><h2>A toolbox:<br>machine learning &amp; deep learning</h2>
-      </section>
-
-      <section>
-        <h2>First, reframe the task: supervised learning</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>A model is a function from <strong>features</strong> $X$ to a <strong>label</strong> $y$:</p>
-            $$ \hat{y} = f(X) $$
-            <p>We know $y$ where sensors exist; we want to fill in the rows where we do not.</p>
-            <ul>
-              <li><strong>features</strong> = what we know about a road &amp; its surroundings</li>
-              <li><strong>label</strong> = the traffic volume we want</li>
+            <ul class="xsmall">
+              <li>Narrow range across folds. Spatial-CV curves share the shape, with modest shifts between held-out regions (Backup).</li>
+              <li>Estimated from link counts only. It attenuates latent OD scores and is not an independently measured behavioural response.</li>
             </ul>
           </div>
-          <div class="col-40 center">
-            <table style="font-size:.72em;">
-              <thead><tr><th>Pop</th><th>Jobs</th><th>Cars</th><th style="background:var(--gold)">Traffic</th></tr></thead>
-              <tbody>
-                <tr><td>12k</td><td>8k</td><td>0.9</td><td>41,000</td></tr>
-                <tr><td>3k</td><td>2k</td><td>1.3</td><td>9,500</td></tr>
-                <tr><td>27k</td><td>19k</td><td>0.7</td><td>88,000</td></tr>
-                <tr><td>6k</td><td>5k</td><td>1.1</td><td style="color:var(--mag);font-weight:700">?</td></tr>
-              </tbody>
-            </table>
-            <div class="muted" style="font-size:.55em;margin-top:.3em;">Predicting traffic = filling the last cell.</div>
-          </div>
         </div>
       </section>
 
       <section>
-        <h2>Start where you already stand: linear regression</h2>
+        <h2>Interpretation: area characteristics and OD scores</h2>
         <div class="cols">
-          <div class="col-60">
-            <p>Fit the best straight line through the data:</p>
-            $$ \hat{y} = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots $$
-            <ul>
-              <li>one feature → a line; many features → a plane</li>
-              <li>choose $\beta$ to minimise $\sum (y-\hat y)^2$</li>
-              <li><strong>fully interpretable</strong>, but assumes a straight-line world</li>
+          <div class="f40 center">
+            <img class="fit" style="max-height:400px" src="figures/ch5_shap_a.png" alt="SHAP values by feature domain">
+            <p class="caption">(a) Feature domains at origin (O) and destination (D). Red: high feature value (Figure 5.15)</p>
+          </div>
+          <div class="f60">
+            <img class="fit" style="max-height:170px" src="figures/ch5_shap_g.png" alt="SHAP values for household car availability">
+            <p class="caption">(g) Household car availability</p>
+            <ul class="xsmall">
+              <li>Random-forest surrogates, one per feature group, fitted to $\log s_{od}$ for 50,000 pairs sampled from 107,317,306 unique screened pairs. SHAP values on the raw LSOA variables.</li>
+              <li>Larger LSOA area goes with higher scores, consistent with fewer zonal alternatives per pair. More households with cars, more residential and commercial land and more transport POIs also go with higher scores.</li>
+              <li>More residents aged 16–24 go with lower scores, and more residents aged 50 and over with higher scores.</li>
+              <li>These are associations with a fitted quantity, not causal effects and not the neural model's internal attribution.</li>
             </ul>
           </div>
-          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_08.svg"></div>
         </div>
       </section>
 
       <section>
-        <h2>When straight lines are not enough</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>Real relationships <strong>bend</strong> and <strong>interact</strong>:</p>
-            <ul>
-              <li>traffic saturates once a road is full</li>
-              <li>jobs matter more <em>near a motorway</em> — an <strong>interaction</strong></li>
-            </ul>
-            <p style="font-size:.85em;">Regression <em>can</em> bend — with <strong>polynomial</strong> &amp; <strong>spline</strong> terms and <strong>interaction</strong> terms — but you must <em>choose</em> the form by hand. The next models <em>learn</em> it.</p>
-            <p class="alert" style="font-size:.82em;">Plain linear regression scores <strong>$R^2 \approx 0$</strong> on unseen roads; the tools next reach <strong>0.6–0.7</strong>.</p>
-          </div>
-          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_09.svg"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Decision trees: ask yes/no questions</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p>A tree splits the data with simple questions, carving the feature space into boxes.</p>
-            <ul>
-              <li>no equations — just <em>if / then</em></li>
-              <li>captures bends &amp; interactions</li>
-              <li>easy to read, but one tree is unstable</li>
+        <h2>Interpretation: origin and destination potentials</h2>
+        <div class="cols mid">
+          <div class="f40">
+            <ul class="xsmall">
+              <li>Destination potential of an LSOA: its mean OD score when acting as destination, per unit area. Origin potential is defined in the same way.</li>
+              <li>Destination potential is polycentric. The City of London, Canary Wharf, the Thames corridor, Heathrow, Gatwick and Manchester Airport stand out. Birmingham Airport is weaker.</li>
+              <li>Origin potential is more diffuse and extends into suburban and peri-urban areas.</li>
+              <li>The model saw no OD flows and no generation or attraction totals. The maps are hypotheses to test against such data, not identified OD estimates.</li>
             </ul>
           </div>
-          <div class="col-60 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_10.svg"></div>
+          <div class="f60 center">
+            <img class="fit" style="max-height:460px" src="figures/ch5_d_potential.jpg" alt="Destination potential across England and Wales">
+            <p class="caption">Destination potential by quintile, with Manchester, Birmingham and London (Figure 5.21)</p>
+          </div>
         </div>
       </section>
 
       <section>
-        <h2>Random forest: a crowd of trees</h2>
-        <div class="cols">
-          <div>
-            <p>Grow <strong>hundreds</strong> of different trees (each on a random slice of data and features), then <strong>average</strong> them.</p>
-            <ul>
-              <li>one tree is noisy; the average is stable</li>
-              <li>"wisdom of the crowd" for models</li>
-              <li>often the strongest simple option on tables</li>
+        <h2>Conditional population-change scenario</h2>
+        <div class="cols mid">
+          <div class="f40">
+            <ul class="xsmall">
+              <li>A variant retrained on the 20 inputs that have projections: land area, population density and 18 age–sex population counts.</li>
+              <li>ONS 2040 population projections replace the inputs. Predictions are compared with the 2022 baseline of the same model. Network and fitted relationships stay fixed.</li>
+              <li>Largest increases on motorways and corridors around and between London, Birmingham, Manchester and Leeds, and on orbital roads. Many rural and peripheral roads change little or decrease.</li>
             </ul>
-            <p class="muted" style="font-size:.6em;">Random forest is one of our baselines later.</p>
+            <p class="alert xsmall">A conditional response of the fitted model, not a validated forecast. Employment, land use, policy, mode shift, congestion and capacity are not represented.</p>
           </div>
-          <div class="center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_11.svg"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Boosting → XGBoost: trees that fix each other</h2>
-        <div class="cols">
-          <div>
-            <p>Build trees <strong>in sequence</strong>: each new tree predicts the <em>errors</em> the previous ones left behind.</p>
-            <ul>
-              <li>small corrections, added up</li>
-              <li><strong>XGBoost</strong> is the popular, fast version</li>
-              <li>usually the <strong>strongest</strong> model on plain tables</li>
-            </ul>
-          </div>
-          <div class="center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_12.svg"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Neural networks — the forward pass</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p>A <strong>neuron</strong> takes a weighted sum and bends it:</p>
-            $$ h = \sigma\!\Big(\textstyle\sum_i w_i x_i + b\Big) $$
-            <ul style="font-size:.9em;">
-              <li>weights $w$ = what it learns</li>
-              <li>$\sigma$ (the bend) lets it curve</li>
-              <li>left→right = a prediction</li>
-            </ul>
-          </div>
-          <div class="col-60 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_13.svg"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>How a network learns — gradients &amp; back-propagation</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>Learning = nudging every weight to reduce the error $L$.</p>
-            <ol style="font-size:.92em;">
-              <li><strong>forward</strong>: compute prediction and error $L=(y-\hat y)^2$</li>
-              <li><strong>backward</strong>: send the error back through the layers</li>
-              <li>each weight learns its blame via the <strong>chain rule</strong>:</li>
-            </ol>
-            $$ \frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat y}\, \frac{\partial \hat y}{\partial h}\, \frac{\partial h}{\partial w} $$
-            <p class="note" style="font-size:.8em;">Gradient descent: &nbsp; $w \leftarrow w - \eta\,\dfrac{\partial L}{\partial w}$ &nbsp; (a small step downhill)</p>
-          </div>
-          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_14.svg"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>From tables to structure</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>Everything so far assumes a tidy <strong>table</strong> of independent rows. But a country is not a table:</p>
-            <ul>
-              <li><strong>where</strong> people live is a <em>map</em> (a grid)</li>
-              <li>roads form a <em>network</em> (a graph)</li>
-              <li>traffic unfolds over <em>time</em> (a sequence)</li>
-            </ul>
-            <p>Specialised networks read each structure: <strong>CNN</strong> (grids), <strong>GAT</strong> (graphs), <strong>RNN / Transformer</strong> (sequences).</p>
-          </div>
-          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_15.svg"></div>
-        </div>
-      </section>
-
-      <!-- CNN -->
-      <section>
-        <h2>CNN — the fundamental idea (convolution)</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>Slide a small learnable <strong>filter</strong> across the grid; each position gives one cell of a <strong>feature map</strong>.</p>
-            <ul style="font-size:.85em;">
-              <li><strong>convolution</strong> $X * H$ — finds a local pattern anywhere</li>
-              <li><strong>activation</strong> (ReLU) — adds the nonlinear bend</li>
-              <li><strong>pooling</strong> — shrink, keep the strongest response</li>
-              <li>stacked layers: edges → blobs → regions</li>
-            </ul>
-            <p class="muted" style="font-size:.6em;">The same operation that reads photographs (LeCun, 1998).</p>
-          </div>
-          <div class="col-40 center vh"><img class="dia" style="width:100%;max-height:250px" src="figures/cnn_conv.svg"></div>
-        </div>
-      </section>
-
-      <!-- GAT -->
-      <section>
-        <h2>GAT — the fundamental idea (graph attention)</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>On a <strong>graph</strong>, each node updates itself from its <strong>neighbours</strong> — and learns <em>how much</em> to weight each one (the attention $\alpha$).</p>
-            <ul style="font-size:.85em;">
-              <li>neighbours are set by the network, not a grid</li>
-              <li>$\alpha_{ij}$ larger for the neighbours that matter</li>
-              <li>stack layers → signal flows further along the graph</li>
-            </ul>
-            <p class="muted" style="font-size:.6em;">Attention is the same mechanism behind Transformers.</p>
-          </div>
-          <div class="col-40 center vh"><img class="dia" style="width:78%;max-height:250px" src="figures/gat_attention.svg"></div>
-        </div>
-      </section>
-
-      <!-- RNN -->
-      <section>
-        <h2>RNN — networks for sequences</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>Walk through a sequence step by step, carrying a <strong>hidden state</strong> $h_t$ that summarises the past:</p>
-            $$ h_t = f(h_{t-1},\, x_t) $$
-            <ul style="font-size:.85em;">
-              <li>natural for <strong>time series</strong> — traffic over hours or days</li>
-              <li><strong>LSTM / GRU</strong> add gates to remember longer</li>
-              <li>strictly left→right, one step at a time</li>
-            </ul>
-          </div>
-          <div class="col-40 center vh"><img class="dia" style="width:100%;max-height:230px" src="figures/rnn_unrolled.svg"></div>
-        </div>
-      </section>
-
-      <!-- Transformer -->
-      <section>
-        <h2>Transformer — attention instead of recurrence</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p>Drop the step-by-step loop: let <strong>every token attend to every other</strong> at once (self-attention).</p>
-            <ul style="font-size:.85em;">
-              <li>attention weight from <strong>query·key</strong> similarity</li>
-              <li>captures <strong>long-range</strong> links; fully parallel</li>
-              <li>stacked encoder / decoder blocks (Add&nbsp;&amp;&nbsp;Norm, feed-forward)</li>
-              <li>the backbone of modern sequence models</li>
-            </ul>
-          </div>
-          <div class="col-40 center"><img class="fig" style="max-height:500px" src="figures/transformer_arch.png"></div>
-        </div>
-      </section>
-    </section>
-
-    <!-- ============================================================ -->
-    <section data-section="What is still missing">
-      <section class="section-divider" data-background-color="#003E74">
-        <div class="kicker">Part 4</div><h2>What is still missing</h2>
-      </section>
-
-      <section>
-        <h2>Short-term deep learning — the "sandwich" structure</h2>
-        <p style="font-size:.9em;">Today's spatiotemporal models stack the pieces from Part 3: an <strong>RNN</strong> (GRU) encodes the recent time series, a <strong>GAT</strong> mixes across the road graph (the filling), and an RNN decodes the next steps — e.g. ST-MetaNet.</p>
-        <div class="center"><img class="fig-wide" style="max-height:440px" src="figures/stmetanet_sandwich.png"></div>
-      </section>
-
-      <section>
-        <h2>Today's traffic deep learning is "one step behind"</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p>State-of-the-art short-term models predict the next 5–60 minutes well — because they mostly <strong>copy the last reading</strong>.</p>
-            <ul style="font-size:.9em;">
-              <li>prediction just trails the true curve by one step</li>
-              <li>needs dense sensor history</li>
-              <li>cannot see <em>unsensored</em> roads</li>
-              <li>cannot serve <em>long-term</em> planning</li>
-            </ul>
-          </div>
-          <div class="col-60 center"><img class="fig" style="max-height:400px" src="figures/stmetanet_lag.png" alt="one step behind"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Four gaps a better model must close</h2>
-        <div class="center"><img class="dia" style="width:74%;max-height:490px" src="figures/dia_16.svg"></div>
-        <p class="center muted" style="font-size:.6em;">The same four properties from earlier — now framed as the <em>gaps</em> existing models leave open.</p>
-      </section>
-
-      <section>
-        <h2>Design goal</h2>
-        <div class="center"><img class="dia" style="width:66%;max-height:490px" src="figures/dia_17.svg"></div>
-      </section>
-
-      <section>
-        <h2>Four-step vs short-term deep learning</h2>
-        <div class="center"><img class="fig-wide" style="max-height:475px" src="figures/comparison_table.png"></div>
-        <p class="center muted" style="font-size:.6em;">Two paradigms, opposite failures — neither is accurate, transferable <em>and</em> interpretable at once.</p>
-      </section>
-    </section>
-
-    <!-- ============================================================ -->
-    <section data-section="Data">
-      <section class="section-divider" data-background-color="#003E74">
-        <div class="kicker">Part 5</div><h2>Data</h2>
-      </section>
-
-      <section>
-        <h2>Three ingredients, shared by both models</h2>
-        <div class="cols">
-          <div class="center">
-            <strong style="color:var(--camb)">Road network</strong>
-            <img class="dia" style="width:100%;max-height:490px" src="figures/dia_18.svg">
-            <div class="muted" style="font-size:.55em;">OSM + National Highways.<br>~6.3M nodes, 7.2M edges.</div>
-          </div>
-          <div class="center">
-            <strong style="color:var(--camb)">Socioeconomic features</strong>
-            <img class="fig" style="max-height:200px" src="figures/mk_pop_emp.png" alt="features">
-            <div class="muted" style="font-size:.55em;">35,672 small areas (LSOA):<br>population, jobs, cars, land use, POIs.</div>
-          </div>
-          <div class="center">
-            <strong style="color:var(--camb)">Ground-truth traffic</strong>
-            <img class="fig" style="max-height:200px" src="figures/mk_traffic_map.png" alt="TRIS">
-            <div class="muted" style="font-size:.55em;">National Highways sensors (TRIS):<br>5,088 segments, 2015–2024.</div>
+          <div class="f60 center">
+            <img class="fit" style="max-height:460px" src="figures/ch5_scenario_2040.jpg" alt="Predicted change under the 2040 population scenario">
+            <p class="caption">(a, b) Absolute and percentage change from 2022. (c) Change by road class. (d) Segment comparison (Figure 5.23)</p>
           </div>
         </div>
-        <p class="center note" style="font-size:.75em;">Features $=X$; sensor volumes $=y$. Train where we have sensors, predict everywhere else.</p>
       </section>
 
       <section>
-        <h2>Data sources — one per input</h2>
-        <table style="margin:.2em auto; font-size:.74em;">
-          <thead><tr><th>Model input</th><th>Data source</th></tr></thead>
+        <h2>Sensitivity analyses</h2>
+        <table class="tbl" style="font-size:.6em; width:88%;">
+          <thead><tr><th>Analysis</th><th>Variant</th><th class="n">Random CV $R^2$</th><th class="n">Spatial CV $R^2$</th></tr></thead>
           <tbody>
-            <tr><td>Road network &amp; geometry</td><td>OpenStreetMap · National Highways SRN</td></tr>
-            <tr><td>Population (age, sex)</td><td>ONS Census 2021</td></tr>
-            <tr><td>Employment (by sector)</td><td>ONS BRES</td></tr>
-            <tr><td>Households &amp; car ownership</td><td>ONS Census 2021</td></tr>
-            <tr><td>Deprivation (income, employment)</td><td>IMD 2019</td></tr>
-            <tr><td>Land use &amp; points of interest</td><td>OpenStreetMap</td></tr>
-            <tr><td>Travel time / generalised cost</td><td>network shortest-path · Google Routes API</td></tr>
-            <tr><td>Traffic (ground-truth AADT)</td><td>National Highways TRIS</td></tr>
+            <tr><th rowspan="3">Multi-year target</th><td>Median across years (main)</td><td class="n">0.706</td><td class="n">0.647</td></tr>
+            <tr><td>Mean across years</td><td class="n">0.709</td><td class="n">0.645</td></tr>
+            <tr><td>Median excluding pandemic years</td><td class="n">0.709</td><td class="n">0.651</td></tr>
+            <tr><th>Input vintage</th><td>All inputs dated before 2017</td><td class="n">0.713</td><td class="n">0.648</td></tr>
+            <tr><th rowspan="3">OD catchment radius</th><td>30 min (0.17 billion pairs)</td><td class="n">0.649</td><td class="n">0.570</td></tr>
+            <tr><td>60 min (1.64 billion pairs, main)</td><td class="n">0.706</td><td class="n">0.647</td></tr>
+            <tr><td>90 min (4.90 billion pairs)</td><td class="n">0.702</td><td class="n">0.646</td></tr>
           </tbody>
         </table>
-        <p class="center muted" style="font-size:.6em;">All open or public data, harmonised to the LSOA and road-network geographies.</p>
-      </section>
-    </section>
-
-    <!-- ============================================================ -->
-    <section data-section="Mukara">
-      <section class="section-divider" data-background-color="#003E74">
-        <div class="kicker">Part 6</div><h2>Mukara</h2>
-      </section>
-
-      <section>
-        <h2>Mukara — the idea</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p class="ok"><strong>One sentence:</strong> predict traffic on every road <strong>from socioeconomic &amp; network features alone</strong>, learned <strong>end-to-end</strong> — no historical sensor input.</p>
-            <p>It treats the whole demand-to-traffic pipeline as one learnable function:</p>
-            $$ \hat{Y} = \text{Mukara}(\underbrace{G}_{\text{network}},\ \underbrace{X}_{\text{features}}) $$
-            <ul style="font-size:.9em;">
-              <li>"from nothing" — works at unsensored roads by design</li>
-              <li>built from two pieces you met: CNN + GAT</li>
-            </ul>
-          </div>
-          <div class="col-40 center"><img class="dia" style="width:86%;max-height:490px" src="figures/dia_19.svg"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Mukara — architecture</h2>
-        <div class="center"><img class="fig-wide" style="max-height:440px" src="figures/mk_framework.png" alt="mukara architecture"></div>
-        <p class="center muted" style="font-size:.55em;">Grid features → CNN → node embeddings; road graph → GAT → per-edge traffic prediction.</p>
-      </section>
-
-      <section>
-        <h2>You have already seen every piece</h2>
-        <div class="center"><img class="dia" style="width:94%;max-height:490px" src="figures/dia_20.svg"></div>
-        <p class="note">No new magic — Mukara is CNN (spatial context) + GAT (network context) + a regression head, trained together by gradient descent.</p>
-      </section>
-
-      <section>
-        <h2>Mukara — the CNN &amp; GAT blocks in detail</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p class="cat">CNN block</p>
-            <p style="font-size:.76em;">131×115×2 grid (population &amp; employment) → 8 conv layers, 7×7 kernels, BatchNorm + ReLU → node embedding.</p>
-            <p class="cat" style="margin-top:.5em;">GAT block</p>
-            <p style="font-size:.76em;">edge-aware attention over the road graph; edge features (distance, speed) shape the weights → per-edge prediction.</p>
-          </div>
-          <div class="col-60 center">
-            <img class="fig-wide" style="max-height:195px" src="figures/mk_cnn_block.png"><br>
-            <img class="fig-wide" style="max-height:195px" src="figures/mk_gat_block.png">
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Mukara — results (kept simple)</h2>
-        <div class="cols">
-          <div class="col-60 center"><img class="fig" style="max-height:430px" src="figures/mk_results.png" alt="mukara results"></div>
-          <div class="col-40">
-            <p class="ok center"><strong>$R^2 = 0.58$</strong><br>MAE $\approx 9{,}000$ veh/day<br><span class="muted" style="font-size:.8em;">(unseen test roads)</span></p>
-            <ul style="font-size:.85em;">
-              <li>predicts traffic it never saw, from features alone</li>
-              <li>holds up under <em>spatial</em> testing (whole regions held out)</li>
-              <li>a genuine "from nothing" proof of concept</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Mukara — what it cannot do</h2>
-        <p>Mukara predicts well, but it is still a <strong>black box</strong>:</p>
-        <ul>
-          <li>no explicit <strong>origin–destination</strong> reasoning — it does not know <em>which trips</em> use a road</li>
-          <li>no readable <strong>deterrence</strong> curve</li>
-          <li>no modular map back to the four steps — few policy levers</li>
+        <p class="caption">Tables 5.7 to 5.9. Each variant is retrained under the full protocol.</p>
+        <ul class="xsmall" style="margin-top:.5em;">
+          <li>Conclusions do not depend on how the multi-year target is summarised, or on using external inputs observed during or after the traffic period.</li>
+          <li>Extending the catchment from 30 to 60 minutes raises $R^2$ by 0.057 and 0.077. Extending it to 90 minutes triples the pairs without gain, so one hour captures most of the available information.</li>
         </ul>
-        <p class="alert">This is exactly what DeepDemand fixes.</p>
+      </section>
+
+      <section>
+        <h2>DeepDemand: scope and limitations</h2>
+        <div class="grid2">
+          <div class="card"><h4>Mode choice</h4><p>Not represented. Car availability and accessibility carry some modal information, but modal shares and competing services are not modelled.</p></div>
+          <div class="card"><h4>Static free-flow travel times</h4><p>Extraction and screening ignore time of day, recurrent congestion and incidents. This suits a long-term AADT target but not time-varying route choice.</p></div>
+          <div class="card"><h4>Assignment-like mapping</h4><p>Screened contributions are summed. There is no equilibrium, capacity or congestion response, and equally short alternative routes are not split.</p></div>
+          <div class="card"><h4>Spatial estimation only</h4><p>No short-term variability and no predictive uncertainty. Temporal forecasting needs its own validation design.</p></div>
+          <div class="card"><h4>Surrogate interpretation</h4><p>SHAP describes associations between raw LSOA variables and fitted OD scores, not the model's internal use of principal components.</p></div>
+          <div class="card"><h4>Freight beyond one hour</h4><p>The NTS covers personal travel only, and mean HGV length of haul is about 105 km. Cars are about 74% of vehicle miles and HGVs about 6%, so the catchment is supported for cars but not for freight.</p></div>
+        </div>
       </section>
     </section>
 
     <!-- ============================================================ -->
-    <section data-section="DeepDemand">
+    <!-- CHAPTER 6                                                    -->
+    <!-- ============================================================ -->
+    <section data-section="Conclusions" data-prog="Chapter 6 of 6">
       <section class="section-divider" data-background-color="#003E74">
-        <div class="kicker">Part 7</div><h2>DeepDemand</h2>
+        <div class="kicker">Chapter 6</div><h2>Conclusions</h2>
+        <p class="sub">Findings · contributions · planning relevance · further work</p>
       </section>
 
       <section>
-        <h2>DeepDemand — embed the theory inside the network</h2>
-        <p class="ok"><strong>One sentence:</strong> take the four-step vocabulary and make <strong>each component a learnable part</strong> of a single, end-to-end differentiable model.</p>
-        <div class="center"><img class="dia" style="width:92%;max-height:490px" src="figures/dia_22.svg"></div>
-        <p class="center muted" style="font-size:.6em;">Theory decides the <em>structure</em>; data fills in the <em>functions</em>.</p>
+        <h2>Answers to the research questions</h2>
+        <div class="answer"><div class="k mk">RQ1</div><div class="v"><strong>Yes, within the study setting.</strong> Mukara estimates weekday traffic on 498 trunk-road segments from external characteristics and network structure, with test $R^2$ 0.583 under random CV and 0.521 under spatial CV, ahead of the gravity, ridge and random-forest baselines. Spatial context and network propagation both contribute.</div></div>
+        <div class="answer"><div class="k dd">RQ2</div><div class="v"><strong>Yes, for specific structural choices.</strong> DeepDemand reaches test $R^2$ 0.706 and 0.647 on 5,088 edges, with the lowest MAE and wMAPE of all models under its protocol. OD extraction and screening lift the same tree learners far above their pooled versions. Ablations support partitioning, screening, learned attenuation and sublinear aggregation, but not separate encoders.</div></div>
+        <div class="answer"><div class="k both">RQ3</div><div class="v"><strong>Both models transfer across English regions</strong> (0.583 to 0.521, and 0.706 to 0.647), while high-capacity trees lose more. DeepDemand exposes a stable attenuation curve, feature associations and spatial potentials. These are model-derived quantities that suggest hypotheses, not identified behavioural parameters.</div></div>
       </section>
 
       <section>
-        <h2>Theory ↔ model, side by side</h2>
-        <table style="margin:0 auto;">
-          <thead><tr><th>Four-step concept</th><th>DeepDemand component</th></tr></thead>
+        <h2>Synthesis: from Mukara to DeepDemand</h2>
+        <table class="tbl" style="font-size:.56em;">
+          <thead><tr><th style="width:21%"></th><th>Mukara</th><th>DeepDemand</th></tr></thead>
           <tbody>
-            <tr><td>Trip generation &amp; attraction</td><td>node encoders $f_O, f_D$ (small neural nets)</td></tr>
-            <tr><td>Trip distribution</td><td>OD interaction scorer $f_{OD}$</td></tr>
-            <tr><td>Impedance / deterrence</td><td>learnable travel-time curve $f_t$</td></tr>
-            <tr><td>Traffic assignment</td><td>competitive Dijkstra selects the OD pairs</td></tr>
-            <tr><td>Congestion / equilibrium</td><td>monotonic scaling $f_S$</td></tr>
+            <tr><th>Prediction unit</th><td>498 directed trunk-road segments between major junctions</td><td>5,088 monitored edges on the detailed driving network</td></tr>
+            <tr><th>Traffic target</th><td>Annual mean weekday daily traffic, 2015–2022</td><td>Median AADT across valid years, 2017–2024</td></tr>
+            <tr><th>External representation</th><td>Rasterised population, employment, land use, road context and POIs</td><td>LSOA demographic, socioeconomic, land-use and POI characteristics</td></tr>
+            <tr><th>Network representation</th><td>Compact trunk-road graph with graph-attention propagation</td><td>Great Britain driving network with target-specific OD extraction and screening</td></tr>
+            <tr><th>Demand representation</th><td>Mostly implicit in learned embeddings</td><td>Explicit screened OD pairs with learned scores and attenuation</td></tr>
+            <tr><th>Test $R^2$, random / spatial</th><td>0.583 / 0.521</td><td>0.706 / 0.647</td></tr>
+            <tr><th>Structural finding</th><td>Spatial context and network propagation both contribute</td><td>Partitioning, screening, attenuation and sublinear aggregation support prediction and transfer</td></tr>
+            <tr><th>Inspectable quantities</th><td>Feature-group and architectural contributions</td><td>Travel-time attenuation, OD scores, origin and destination potentials</td></tr>
           </tbody>
         </table>
+        <p class="caption">After Table 6.1. The $R^2$ values are not directly comparable: units, targets, periods and protocols differ.</p>
       </section>
 
       <section>
-        <h2>Key idea — which trips actually use <em>this</em> road?</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p>Grow two searches from the road's two ends (a "competitive" shortest-path race):</p>
-            <ul style="font-size:.88em;">
-              <li>one side collects feasible <strong>origins</strong>, the other <strong>destinations</strong></li>
-              <li>keep an OD pair only if its fastest route <em>must</em> cross this road</li>
-              <li>cut off at a 1-hour catchment</li>
-            </ul>
-            <p class="muted" style="font-size:.6em;">Anchors each prediction to the demand that <em>causes</em> it — the model's "assignment".</p>
-          </div>
-          <div class="col-60 center"><img class="fig" style="max-height:430px" src="figures/Figure_5.png" alt="local OD region"></div>
+        <h2>Contributions</h2>
+        <div class="grid3">
+          <div class="card"><h4>1 · Observation-supervised external-input estimation</h4><p>Two models learn link-level traffic from observed counts, with only external socioeconomic and network information at prediction: no traffic-state input and no observed OD matrix. The claim is this conjunction at national scale, not the first use of external variables.</p></div>
+          <div class="card"><h4>2 · Explicit test of geographical generalisation</h4><p>Region-held-out CV alongside random CV in both studies. It separates models that transfer from models that only fit, and it bounds the claims: it is not future-year forecasting, transfer to another country or intervention analysis.</p></div>
+          <div class="card"><h4>3 · Theory-informed OD representation at national scale</h4><p>Competitive two-source Dijkstra, shortest-path screening, learned interaction and travel-time attenuation. Routing on 6.3 million nodes becomes a reusable preprocessing step, and the representation is separable from the neural architecture.</p></div>
         </div>
+        <p class="note small" style="margin-top:.8em;">Observed link counts can supervise models that learn demand-to-flow relationships from external characteristics and network structure. How that relationship is represented matters for accuracy, transfer and interpretation, beyond model capacity alone.</p>
       </section>
 
       <section>
-        <h2>Why a 1-hour catchment?</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p>A design choice, justified by real travel behaviour (National Travel Survey):</p>
-            <ul>
-              <li>the vast majority of car trips are short</li>
-              <li>only <strong>3.7%</strong> of car trips exceed 60 minutes</li>
-              <li>so a 1-hour catchment captures almost all traffic, while keeping computation feasible</li>
-            </ul>
-          </div>
-          <div class="col-60 center"><img class="fig" style="max-height:400px" src="figures/nts_car_trip_survival.png" alt="NTS survival"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>DeepDemand — the learnable formula</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p>For each surviving OD pair, combine two learned quantities and sum:</p>
-            $$ \hat{y}_{e^*}=\gamma\, f_S\!\Big(\!\!\sum_{(o,d)\in\mathcal P^*}\!\! \underbrace{s_{od}}_{\text{dist.}}\cdot \underbrace{p_{od}}_{\text{deter.}}\Big) $$
-            <ul style="font-size:.82em;">
-              <li>$s_{od}$: how much two places want to trade ($f_{OD}$)</li>
-              <li>$p_{od}$: how much travel time discourages it ($f_t$)</li>
-              <li>all trained <strong>jointly</strong> by gradient descent</li>
-            </ul>
-          </div>
-          <div class="col-60 center"><img class="fig-tall" style="max-height:470px" src="figures/Figure_6.png" alt="deepdemand architecture"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>DeepDemand — results (kept simple)</h2>
-        <div class="cols">
-          <div class="col-60 center"><img class="fig-wide" src="figures/dd_results_scatter.png" alt="deepdemand results">
-            <div class="muted" style="font-size:.55em;">Predicted vs. true traffic: train (left), unseen test (right).</div>
-          </div>
-          <div class="col-40">
-            <p class="ok center"><strong>$R^2 = 0.71$</strong> (random test)<br><strong>$R^2 = 0.65$</strong> (whole regions held out)<br>MAE $\approx 7{,}600$ veh/day</p>
-            <ul style="font-size:.82em;">
-              <li>matches the strongest tabular models (XGBoost, LightGBM) on random test</li>
-              <li>pulls clearly ahead when <em>entire regions</em> are unseen</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2>It transfers across regions</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p>The demanding test: hold out <strong>whole regions</strong>, train on the rest, predict the unseen region.</p>
-            <ul>
-              <li>most regions stay near the overall accuracy</li>
-              <li>embedding demand <em>theory</em> — not just a fixed formula — is what buys the transfer</li>
-            </ul>
-            <p class="muted" style="font-size:.6em;">The property short-term deep learning simply does not have.</p>
-          </div>
-          <div class="col-60 center"><img class="fig" style="max-height:430px" src="figures/spatial_cv_r2_region_bar.png" alt="regional R2"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Full comparison — all baselines, both protocols</h2>
-        <table style="margin:.1em auto; font-size:.5em;">
-          <thead>
-            <tr><th rowspan="2" style="vertical-align:bottom;">Model</th><th colspan="4">Random 5-fold CV</th><th colspan="4" style="background:var(--camb-mid)">Spatial CV</th></tr>
-            <tr><th>MGEH</th><th>MAE</th><th>wMAPE</th><th>$R^2$</th><th style="background:var(--camb-mid)">MGEH</th><th style="background:var(--camb-mid)">MAE</th><th style="background:var(--camb-mid)">wMAPE</th><th style="background:var(--camb-mid)">$R^2$</th></tr>
-          </thead>
-          <tbody style="text-align:center;">
-            <tr><td style="text-align:left">Mean</td><td>96.8</td><td>15171</td><td>60.1</td><td>&minus;0.00</td><td>97.5</td><td>15402</td><td>60.4</td><td>&minus;0.10</td></tr>
-            <tr><td style="text-align:left">Linear</td><td>89.7</td><td>14350</td><td>56.1</td><td>&minus;0.00</td><td>93.2</td><td>14956</td><td>57.5</td><td>&minus;0.12</td></tr>
-            <tr><td style="text-align:left">Ridge</td><td>89.4</td><td>14141</td><td>55.7</td><td>0.06</td><td>93.2</td><td>14876</td><td>57.4</td><td>&minus;0.09</td></tr>
-            <tr><td style="text-align:left">Gravity</td><td>65.5</td><td>9379</td><td>37.2</td><td>0.55</td><td>66.5</td><td>9521</td><td>37.4</td><td>0.49</td></tr>
-            <tr><td style="text-align:left">RF (pooled)</td><td>90.3</td><td>14195</td><td>56.2</td><td>0.11</td><td>92.0</td><td>14534</td><td>56.5</td><td>0.01</td></tr>
-            <tr><td style="text-align:left">Random forest</td><td>57.7</td><td>8659</td><td>34.3</td><td>0.62</td><td>66.4</td><td>10318</td><td>40.3</td><td>0.45</td></tr>
-            <tr><td style="text-align:left">XGB (pooled)</td><td>90.0</td><td>14141</td><td>56.0</td><td>0.12</td><td>92.0</td><td>14514</td><td>56.3</td><td>0.00</td></tr>
-            <tr><td style="text-align:left">XGBoost</td><td>53.2</td><td>7975</td><td>31.6</td><td>0.66</td><td>63.2</td><td>9776</td><td>38.3</td><td>0.46</td></tr>
-            <tr><td style="text-align:left">LGBM (pooled)</td><td>89.6</td><td>14042</td><td>55.6</td><td>0.13</td><td>91.9</td><td>14493</td><td>56.2</td><td>0.01</td></tr>
-            <tr><td style="text-align:left">LightGBM</td><td>51.1</td><td>7652</td><td>30.3</td><td>0.68</td><td>61.3</td><td>9487</td><td>37.1</td><td>0.48</td></tr>
-            <tr><td style="text-align:left">GAT</td><td>72.4</td><td>11102</td><td>44.0</td><td>0.40</td><td>74.4</td><td>11552</td><td>45.0</td><td>0.32</td></tr>
-            <tr><td style="text-align:left">Mukara$^{\dagger}$</td><td>50.7</td><td>8989</td><td>—</td><td>0.58</td><td>57.6</td><td>9955</td><td>—</td><td>0.52</td></tr>
-            <tr style="background:#dcefe7; font-weight:700; color:var(--deep);"><td style="text-align:left">DeepDemand</td><td>56.1</td><td>7567</td><td>30.0</td><td>0.71</td><td>58.0</td><td>7885</td><td>31.1</td><td>0.65</td></tr>
-          </tbody>
-        </table>
-        <p class="center muted" style="font-size:.55em;">(pooled) = tabular model without OD extraction. The OD extraction lifts tabular $R^2$ from ≈0.11 to ≈0.65 (the <em>structural</em> prior); DeepDemand leads on random CV and widens its lead under spatial CV.</p>
-      </section>
-
-      <section>
-        <h2>The payoff (1) — learned deterrence</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p>The model learns its own <strong>deterrence curve</strong> — the four-step model's $f(c_{ij})$, but discovered from data, not assumed.</p>
-            <ul style="font-size:.9em;">
-              <li>trips fall smoothly as travel time grows</li>
-              <li>stable across cross-validation folds</li>
-              <li>matches classic survey-based patterns</li>
-            </ul>
-          </div>
-          <div class="col-60 center"><img class="fig" style="max-height:400px" src="figures/dd_deterrence.png" alt="deterrence"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>The payoff (2) — what drives demand</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p><strong>SHAP</strong> attribution opens the box: which features push traffic up or down, and where.</p>
-            <ul style="font-size:.9em;">
-              <li>population and jobs dominate, as theory expects</li>
-              <li>car ownership, land use, age structure all readable</li>
-              <li>separate stories for <em>origin</em> vs <em>destination</em></li>
-            </ul>
-          </div>
-          <div class="col-60 center"><img class="fig-tall" style="max-height:480px" src="figures/dd_shap.png" alt="SHAP"></div>
-        </div>
-      </section>
-
-      <section>
-        <h2>The payoff (3) — demand in space</h2>
-        <div class="cols">
-          <div class="col-40">
-            <p>The learned origin–destination "pull" can be mapped, revealing <strong>polycentric</strong> structure aligned with real employment hubs and airports.</p>
-            <p class="note" style="font-size:.82em;">The bridge back to planning: high-demand corridors, spatial mismatches, where new capacity would matter.</p>
-          </div>
-          <div class="col-60 center"><img class="fig-tall" style="max-height:480px" src="figures/Figure_10.png" alt="OD map"></div>
-        </div>
-      </section>
-    </section>
-
-    <!-- ============================================================ -->
-    <section data-section="Outlook">
-      <section class="section-divider" data-background-color="#003E74">
-        <div class="kicker">Part 8</div><h2>Outlook</h2>
-      </section>
-
-      <section>
-        <h2>Where this leaves us</h2>
+        <h2>Planning relevance and scope</h2>
         <div class="cols">
           <div>
-            <p class="ok" style="font-size:.9em;"><strong>The arc:</strong> regression → trees → neural nets → CNN/GAT → <strong>Mukara</strong> (accurate, from features) → <strong>DeepDemand</strong> (accurate <em>and</em> transferable <em>and</em> interpretable).</p>
-            <ul style="font-size:.85em;">
-              <li>long-term traffic <em>can</em> be predicted from socioeconomics alone</li>
-              <li>embedding theory buys transfer <em>and</em> interpretability</li>
-              <li>the four-step vocabulary survives — now learned, not hand-tuned</li>
+            <p class="cat" style="font-size:.7em;">Supports</p>
+            <ul class="xsmall">
+              <li>Estimates at unmonitored roads where compatible socioeconomic and network data exist.</li>
+              <li>Network screening, preliminary demand assessment and targeting of new monitoring.</li>
+              <li>Conditional scenario exploration under stated assumptions, such as the 2040 population projections.</li>
+              <li>Exploratory analysis of learned demand structure: attenuation, OD scores and potentials.</li>
             </ul>
           </div>
           <div>
-            <p class="note" style="font-size:.88em;"><strong>Complement, not replacement.</strong> These models are not a rival to established pipelines (four-step, MATSim). They fill the gap those tools leave: fast, data-sparse, unmonitored, national-scale early screening.</p>
+            <p class="cat" style="font-size:.7em; color:var(--mag);">Does not establish</p>
+            <ul class="xsmall">
+              <li>Validated long-term traffic forecasts.</li>
+              <li>Causal effects of housing, pricing or infrastructure interventions.</li>
+              <li>Mode choice, congested equilibrium or time-varying route choice.</li>
+              <li>Transfer to other countries, dense urban networks or different road hierarchies.</li>
+              <li>Precise engineering estimates without local calibration or measurement.</li>
+            </ul>
           </div>
         </div>
+        <p class="note xsmall">Traffic observations still matter. Performance depends on the representativeness and quality of the training counts, and a new setting needs validation and a check that it lies within the training domain.</p>
       </section>
 
       <section>
-        <h2>What comes next: Mukara3 &amp; a digital twin</h2>
-        <div class="cols">
-          <div class="col-60">
-            <p><strong>Mukara3</strong> asks the inverse question: infer the <em>latent</em> origin–destination flows behind the counts.</p>
-            <ul style="font-size:.88em;">
-              <li>explicit destination competition (softmax) and cost sensitivity</li>
-              <li>hourly resolution; road counts as the only supervision</li>
-              <li>roadmap: multimodal competition (car / rail / bus)</li>
-            </ul>
-            <p class="muted" style="font-size:.7em;"><strong>Vision:</strong> an interpretable model that learns from incomplete, biased observations — a digital twin for counterfactual policy.</p>
-          </div>
-          <div class="col-40 center"><img class="dia" style="width:100%;max-height:490px" src="figures/dia_23.svg"></div>
+        <h2>Directions for further work</h2>
+        <div class="grid3">
+          <div class="card"><h4>Coverage and inputs</h4><ul><li>Automatic sensor matching for more targets</li><li>Time-varying land use, capacity and junction detail</li><li>Finer zones, which need faster screening</li></ul></div>
+          <div class="card"><h4>Demand structure</h4><ul><li>Explicit mode choice</li><li>Multi-path, equilibrium or dynamic assignment</li><li>Time-dependent costs and freight-specific catchments</li><li>Synthetic benchmarks with known ground truth</li></ul></div>
+          <div class="card"><h4>Architecture and scaling</h4><ul><li>Other learners on the same OD representation</li><li>Simpler variants such as a shared encoder</li><li>Faster routing and screening for finer zones</li></ul></div>
+          <div class="card"><h4>Temporal validation</h4><ul><li>Rolling-origin tests on genuinely later data</li><li>Joint projections of population, employment and transport supply</li></ul></div>
+          <div class="card"><h4>Predictive uncertainty</h4><ul><li>Ensembles and Bayesian methods</li><li>Assessment by calibration, coverage and interval width</li></ul></div>
+          <div class="card"><h4>Transfer and causality</h4><ul><li>Other countries and few-shot calibration</li><li>Causal designs for intervention questions</li></ul></div>
         </div>
+        <p class="caption">Section 6.4</p>
       </section>
 
       <section class="title-slide plain">
         <span class="title-box"><h1>Thank you</h1></span>
-        <p class="subtitle">Questions &amp; discussion</p>
-        <p class="byline"><strong>Dr Yue Li</strong> · Martin Centre for Architectural and Urban Studies, University of Cambridge</p>
+        <p class="subtitle">Questions and discussion</p>
+        <p class="byline"><strong>Yue Li</strong> · Department of Architecture, University of Cambridge</p>
+      </section>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- BACKUP SLIDES                                                -->
+    <!-- ============================================================ -->
+    <section data-section="Backup slides" data-prog="Backup" data-appendix>
+      <section class="section-divider" data-background-color="#003E74">
+        <div class="kicker">Appendix</div><h2>Backup slides</h2>
+      </section>
+
+      <section>
+        <h2>Four-step model: key relationships</h2>
+        <div class="cols">
+          <div>
+            <p class="cat" style="font-size:.68em;">Distribution</p>
+            <div class="xsmall eqs">
+              $$T_{ij}=A_iO_iB_jD_j\,f(c_{ij})$$
+              $$A_i=\Big[\sum_j B_jD_jf(c_{ij})\Big]^{-1}$$
+              $$B_j=\Big[\sum_i A_iO_if(c_{ij})\Big]^{-1}$$
+            </div>
+            <p class="xsmall">Maximising $\log W$ with $W=T!/\prod_{ij}T_{ij}!$, subject to the margins and the total cost $C=\sum_{ij}T_{ij}c_{ij}$, gives $f(c_{ij})=\exp(-\beta c_{ij})$ (Wilson).</p>
+            <p class="cat" style="font-size:.68em;">Mode choice</p>
+            <div class="xsmall">$$P^{k}_{ij}=\frac{\exp(V^{k}_{ij})}{\sum_{k'\in\mathcal{K}_{ij}}\exp(V^{k'}_{ij})},\qquad T^{k}_{ij}=P^{k}_{ij}\,T_{ij}$$</div>
+          </div>
+          <div>
+            <p class="cat" style="font-size:.68em;">Assignment</p>
+            <div class="xsmall">
+              $$\sum_{r\in\mathcal{R}_{ij}}f_{ijr}=q_{ij},\qquad v_a=\sum_{ij}\sum_{r\in\mathcal{R}_{ij}}\delta_{a,ijr}\,f_{ijr}$$
+              $$\min_{\mathbf{f}}\ \sum_a\int_0^{v_a}t_a(x)\,\mathrm{d}x$$
+            </div>
+            <ul class="xsmall">
+              <li>User equilibrium: all used routes of an OD pair have equal, minimal cost. Link costs follow a volume–delay function such as BPR.</li>
+              <li>Many OD and route-flow patterns give the same link totals, so counts alone do not identify a unique OD matrix.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="caption">Section 2.2</p>
+      </section>
+
+      <section>
+        <h2>GEH on daily volumes</h2>
+        <div class="cols">
+          <div class="f55">
+            <ul class="xsmall">
+              <li>Reference values of 5 and 10 come from hourly assignment validation. Multiplying both flows by $c$ multiplies GEH by $\sqrt{c}$.</li>
+              <li>If daily traffic is about ten times peak-hour traffic, illustrative daily levels are about 16 and 32. They are not acceptance thresholds.</li>
+              <li>DeepDemand: 19.5% of target edges below 16 and 37.0% below 32 under random CV, 18.3% and 36.3% under spatial CV.</li>
+              <li>Mukara: 18% of sensors below 16 and 49% below 32 in the random-CV test sets. Sensor-level MGEH quartiles 23.88, 32.10 and 72.51.</li>
+              <li>Many individual links keep substantial error even where network-level $R^2$, MAE and wMAPE are useful.</li>
+            </ul>
+          </div>
+          <div class="f45">
+            <p class="xsmall"><strong>Relation to $R^2$.</strong> With small relative errors and a volume-weighted RMS GEH $G$,</p>
+            <div class="small">$$R^2\approx 1-G^2\,\frac{\bar{y}}{\sigma_y^2}$$</div>
+            <p class="xsmall">For this network $\bar{y}=25{,}243$ and $\sigma_y=18{,}893$, so $G=16$ corresponds to $R^2\approx0.982$ and $G=32$ to $R^2\approx0.928$.</p>
+            <p class="xsmall muted">RMS GEH is not MGEH, so there is no general conversion from the reported MGEH to $R^2$ (Appendix A.3).</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>ST-MetaNet case study: setup and errors</h2>
+        <div class="cols mid">
+          <div class="f45">
+            <ul class="xsmall">
+              <li>498 monitored segments, 35,040 timestamps from 2022, twelve 15-minute intervals in and out.</li>
+              <li>Inputs: speed and volume, missing-data masks, calendar information, road and junction metadata.</li>
+              <li>Chronological 70/10/20 split. Errors after three epochs:</li>
+            </ul>
+            <table class="tbl" style="font-size:.58em;">
+              <thead><tr><th>Variable</th><th>Metric</th><th class="n">Training</th><th class="n">Validation</th></tr></thead>
+              <tbody>
+                <tr><td>Speed</td><td>MAE (km/h)</td><td class="n">1.527</td><td class="n">2.538</td></tr>
+                <tr><td>Speed</td><td>RMSE (km/h)</td><td class="n">3.308</td><td class="n">5.237</td></tr>
+                <tr><td>Volume</td><td>MAE (veh/15 min)</td><td class="n">25.74</td><td class="n">68.85</td></tr>
+                <tr><td>Volume</td><td>RMSE (veh/15 min)</td><td class="n">41.65</td><td class="n">126.28</td></tr>
+              </tbody>
+            </table>
+            <p class="caption">Table 2.2. Appendix B gives the architecture and training details.</p>
+          </div>
+          <div class="f55 center">
+            <img class="fit" style="max-height:230px" src="figures/ch2_stmetanet_extrapolation.png" alt="Twelve-step forecast continuing the recent trend">
+            <p class="caption">Blind extrapolation: smooth continuation of the recent trend (Figure 2.5)</p>
+            <p class="xsmall" style="text-align:left;">Follow-up: 30-minute averages and a twelve-to-one structure (six hours of history, next half hour), shown for 4 to 10 November 2019.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Mukara: representative sensor selection</h2>
+        <div class="cols">
+          <div class="f45">
+            <table class="tbl" style="font-size:.56em;">
+              <thead><tr><th>Step</th><th class="n">Remaining</th><th class="n">Excluded</th></tr></thead>
+              <tbody>
+                <tr><td>Candidate sensors mapped to the 498 segments</td><td class="n">3,984</td><td class="n">–</td></tr>
+                <tr><td>Topology filter: slip roads, ramps, junction influence zones</td><td class="n">2,815</td><td class="n">1,169</td></tr>
+                <tr><td>One sensor per segment, availability first</td><td class="n">498</td><td class="n">2,317</td></tr>
+                <tr><td>Fallback: opposite-direction proxy</td><td class="n">3 segments</td><td class="n">–</td></tr>
+              </tbody>
+            </table>
+            <p class="caption">Table 4.2</p>
+          </div>
+          <div class="f55">
+            <table class="tbl" style="font-size:.56em;">
+              <thead><tr><th>Characteristic</th><th class="n">Included (498)</th><th class="n">Discarded (3,486)</th></tr></thead>
+              <tbody>
+                <tr><td>Motorway share</td><td class="n">60.2%</td><td class="n">57.1%</td></tr>
+                <tr><td>Mainline position</td><td class="n">100%</td><td class="n">66.8%</td></tr>
+                <tr><td>London share</td><td class="n">6.4%</td><td class="n">14.9%</td></tr>
+                <tr><td>Mean volume (SD), veh/day</td><td class="n">33,735 (21,999)</td><td class="n">30,151 (27,358)</td></tr>
+                <tr><td>Temporal coverage (SD)</td><td class="n">0.86 (0.10)</td><td class="n">0.31 (0.24)</td></tr>
+              </tbody>
+            </table>
+            <p class="caption">Table 4.3</p>
+            <ul class="xsmall">
+              <li>Selection favours mainline sensors with high completeness. The national traffic pattern is retained (Figure 4.4), but a comparison of means cannot establish representativeness across the whole volume distribution.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Mukara: architecture tuning</h2>
+        <img class="fit" style="max-height:360px" src="figures/ch4_tuning.png" alt="Test error by architectural setting">
+        <p class="caption">Test MGEH and MAE by configuration (Figure 4.12)</p>
+        <ul class="xsmall">
+          <li>Best individual settings: CNN channels (16, 32, 64), a 21 × 21 km region of interest, four heads, five GAT layers and embedding size 16.</li>
+          <li>The final configuration adopts four heads and keeps the default 25 km region of interest. Loss reaches its minimum near epoch 27, and early stopping with a learning-rate schedule gave a similar best result.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Mukara: robustness checks under spatial CV</h2>
+        <div class="cols">
+          <div class="f55">
+            <table class="tbl" style="font-size:.55em;">
+              <thead><tr><th>Check</th><th>Variant</th><th class="n">MGEH</th><th class="n">MAE</th><th class="n">$R^2$</th></tr></thead>
+              <tbody>
+                <tr class="hl-mk"><td>Main model</td><td>2023 OSM, weekdays, MGEH loss</td><td class="n">57.63</td><td class="n">9,955</td><td class="n">0.521</td></tr>
+                <tr><td>OSM vintage</td><td>1 January 2019 snapshot</td><td class="n">58.14</td><td class="n">10,021</td><td class="n">0.517</td></tr>
+                <tr><td>Target days</td><td>All days, including weekends and holidays</td><td class="n">56.48</td><td class="n">9,734</td><td class="n">0.533</td></tr>
+                <tr><td rowspan="3">Training loss</td><td>MSE</td><td class="n">58.12</td><td class="n">9,901</td><td class="n">0.523</td></tr>
+                <tr><td>MAE</td><td class="n">58.64</td><td class="n">9,843</td><td class="n">0.519</td></tr>
+                <tr><td>Huber</td><td class="n">57.91</td><td class="n">9,886</td><td class="n">0.522</td></tr>
+              </tbody>
+            </table>
+            <p class="caption">Tables 4.8 to 4.10</p>
+            <p class="xsmall">MGEH training favours the lowest-volume quartile (MGEH 51.5 against 55.9 with MSE). MSE training favours the highest (67.2 against 69.8). The loss redistributes error rather than changing predictive capacity (Table 4.11).</p>
+          </div>
+          <div class="f45">
+            <table class="tbl" style="font-size:.52em;">
+              <thead><tr><th>Region</th><th class="n">Observed</th><th class="n">Predicted</th><th class="n">Error</th></tr></thead>
+              <tbody>
+                <tr><td>North East</td><td class="n">0.728</td><td class="n">0.756</td><td class="n">+3.8%</td></tr>
+                <tr><td>North West</td><td class="n">2.342</td><td class="n">2.296</td><td class="n">−2.0%</td></tr>
+                <tr><td>Yorkshire and The Humber</td><td class="n">2.063</td><td class="n">2.128</td><td class="n">+3.2%</td></tr>
+                <tr><td>East Midlands</td><td class="n">2.781</td><td class="n">2.719</td><td class="n">−2.2%</td></tr>
+                <tr><td>West Midlands</td><td class="n">2.654</td><td class="n">2.732</td><td class="n">+2.9%</td></tr>
+                <tr><td>East of England</td><td class="n">1.742</td><td class="n">1.703</td><td class="n">−2.2%</td></tr>
+                <tr><td>London</td><td class="n">1.964</td><td class="n">1.856</td><td class="n">−5.5%</td></tr>
+                <tr><td>South East</td><td class="n">1.897</td><td class="n">1.842</td><td class="n">−2.9%</td></tr>
+                <tr><td>South West</td><td class="n">0.629</td><td class="n">0.667</td><td class="n">+6.0%</td></tr>
+                <tr class="hl-mk"><td>National</td><td class="n">16.800</td><td class="n">16.699</td><td class="n">−0.6%</td></tr>
+              </tbody>
+            </table>
+            <p class="caption">Sums of segment volumes in held-out regions, million vehicles per day (Table 4.13). Not unique trips, and errors can cancel.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>DeepDemand: LSOA feature groups</h2>
+        <table class="tbl" style="font-size:.56em;">
+          <thead><tr><th>Feature group</th><th>Stratification</th><th class="n">Features</th><th>TDM relevance</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td>Area and population density</td><td>Land area, population density</td><td class="n">2</td><td>Generation, distribution</td><td>ONS</td></tr>
+            <tr><td>Population</td><td>Total, sex (2), age groups (5), sex–age (10)</td><td class="n">18</td><td>Generation</td><td>ONS</td></tr>
+            <tr><td>Employment</td><td>Total, work type (2), sector (18), work type–sector (36)</td><td class="n">57</td><td>Attraction</td><td>ONS (BRES)</td></tr>
+            <tr><td>Households and cars</td><td>Total, car or van availability (2), composition (10), combinations (20)</td><td class="n">33</td><td>Generation, mode choice</td><td>Census 2021</td></tr>
+            <tr><td>Deprivation</td><td>Income and employment domain scores, 2019</td><td class="n">2</td><td>Generation, distribution</td><td>Deprivation data</td></tr>
+            <tr><td>Land-use area</td><td>Residential, commercial, industrial, retail</td><td class="n">4</td><td>Generation, attraction, distribution</td><td>OSM</td></tr>
+            <tr><td>POIs</td><td>Transport, food, health, education, retail</td><td class="n">5</td><td>Attraction, distribution</td><td>OSM</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">Table 5.1. 121 variables harmonised to 2021 LSOAs (2011-based sources converted with the ONS exact-fit lookup), standardised and reduced to 64 principal components.</p>
+      </section>
+
+      <section>
+        <h2>DeepDemand: baseline construction</h2>
+        <div class="cols">
+          <div class="f55">
+            <ul class="xsmall">
+              <li><strong>OD-structured features</strong> (242): mean raw LSOA vector over the unique screened origins, concatenated with the mean over the unique screened destinations.</li>
+              <li><strong>Pooled features</strong> (121): mean over all LSOAs in the unscreened one-hour region, with no origin–destination separation and no screening.</li>
+              <li><strong>Gravity:</strong> $G_{e^\star}(\lambda)=\sum_{(o,d)\in\mathcal{P}_{e^\star}}M_oM_d\exp(-\lambda\,\tau_{\mathrm{OD}}(o,d))$, with masses from population plus employment and $\log y=a_0+a_1\log(G+\epsilon)$. $\lambda$ is chosen on validation data.</li>
+              <li><strong>GAT:</strong> two-hub local graph. Candidate origins link to $u$ and destinations to $v$, with access and egress times as edge features, and one to six attention layers chosen on validation data. No screening.</li>
+              <li>Hyperparameters of every model are selected on validation MGEH. Test data are used only for final evaluation.</li>
+            </ul>
+          </div>
+          <div class="f45">
+            <table class="tbl" style="font-size:.54em;">
+              <thead><tr><th>Aspect</th><th>Mukara</th><th>DeepDemand</th></tr></thead>
+              <tbody>
+                <tr><td>Targets</td><td>498 manually built segments</td><td>5,088 automatically matched edges</td></tr>
+                <tr><td>Years</td><td>2015–2022</td><td>2017–2024</td></tr>
+                <tr><td>Target</td><td>Annual weekday volume</td><td>Median AADT across years</td></tr>
+                <tr><td>Features</td><td>1 km rasters</td><td>121 LSOA variables, 64 components</td></tr>
+                <tr><td>Random CV</td><td>Five folds, four fitted and one tested</td><td>70/10/20 within five folds</td></tr>
+                <tr><td>Spatial CV</td><td>Nine regions</td><td>Nine regions</td></tr>
+              </tbody>
+            </table>
+            <p class="caption">Table 5.3. Mukara is an external reference, not a controlled baseline.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>DeepDemand: training against test performance</h2>
+        <table class="tbl" style="font-size:.6em; width:80%;">
+          <thead>
+            <tr><th rowspan="2" style="vertical-align:bottom">Model</th><th colspan="2" class="grp">Random CV $R^2$</th><th colspan="2" class="grp">Spatial CV $R^2$</th></tr>
+            <tr><th class="n sub">Training</th><th class="n sub">Test</th><th class="n sub bl">Training</th><th class="n sub">Test</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Gravity (log-linear)</td><td class="n">0.546</td><td class="n">0.546</td><td class="n bl">0.546</td><td class="n">0.486</td></tr>
+            <tr><td>Random forest (OD-structured)</td><td class="n">0.931</td><td class="n">0.623</td><td class="n bl">0.934</td><td class="n">0.445</td></tr>
+            <tr><td>XGBoost (OD-structured)</td><td class="n">0.976</td><td class="n">0.656</td><td class="n bl">0.977</td><td class="n">0.458</td></tr>
+            <tr><td>LightGBM (OD-structured)</td><td class="n">0.973</td><td class="n">0.678</td><td class="n bl">0.973</td><td class="n">0.481</td></tr>
+            <tr><td>GAT</td><td class="n">0.567</td><td class="n">0.402</td><td class="n bl">0.592</td><td class="n">0.319</td></tr>
+            <tr class="hl-dd"><td>DeepDemand</td><td class="n">0.729</td><td class="n">0.706</td><td class="n bl">0.729</td><td class="n">0.647</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">Tables 5.4 and 5.5, means across folds</p>
+        <p class="xsmall center" style="margin-top:.7em;">The tree ensembles fit the training edges almost exactly but transfer worst. The train–test gap of DeepDemand is small under both schemes.</p>
+      </section>
+
+      <section>
+        <h2>DeepDemand: attenuation by held-out region</h2>
+        <div class="cols mid">
+          <div class="f60 center">
+            <img class="fit" style="max-height:460px" src="figures/ch5_attenuation_regions.png" alt="Attenuation curves by held-out region">
+            <p class="caption">Spatial-CV attenuation curves against the random-CV mean (Figure 5.13)</p>
+          </div>
+          <div class="f40">
+            <ul class="xsmall">
+              <li>Every fold learns the same overall form, with modest shifts between held-out regions.</li>
+              <li>The shifts suggest some geographical variation in the fitted sensitivity to travel time.</li>
+              <li>They are properties of the fitted model, estimated from link counts, not measured behaviour.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>DeepDemand: training settings and compute</h2>
+        <div class="cols">
+          <div>
+            <ul class="xsmall">
+              <li>Random CV: 70/10/20 split of target edges in each fold. Spatial CV: one region for testing and 12.5% of the other regions' edges for validation.</li>
+              <li>Edge-centric batches: eight target edges per pass, gradients accumulated over four passes, an effective batch of 32.</li>
+              <li>AdamW, weight decay $10^{-4}$, gradient-norm clipping at 5.</li>
+              <li>Learning rates $3\times10^{-3}$, $10^{-3}$ and $3\times10^{-4}$. A stage ends when validation MGEH fails to improve by 0.1 over 15 evaluations, and its best checkpoint seeds the next stage.</li>
+              <li>MLP widths: $f_{\mathrm{O}}$ and $f_{\mathrm{D}}$ [16, 16], $f_{\mathrm{OD}}$ [16, 8], $f_{\mathrm{t}}$ [16, 16].</li>
+            </ul>
+          </div>
+          <div>
+            <ul class="xsmall">
+              <li>Workstation: Intel Core i7-13700F, 16 GB RAM, NVIDIA RTX 4060 Ti with 8 GB, PyTorch 2.5.1.</li>
+              <li>Preprocessing of all 5,088 edges: about 33 minutes, done once and cached.</li>
+              <li>Training: about 28 minutes per random-CV fold and 50 minutes per spatial-CV fold.</li>
+              <li>Shortest-path trees are cached to $2\tau_{\max}$. A pair whose full journey through the edge exceeds this horizon can be missed, a small approximation.</li>
+              <li>Data: doi.org/10.17863/CAM.127892. Code: github.com/yueli901/DeepDemand.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>DeepDemand: spatial distribution of errors</h2>
+        <div class="cols mid">
+          <div class="f55 center">
+            <img class="fit" style="max-height:470px" src="figures/ch5_residuals.jpg" alt="Direction-specific prediction errors">
+            <p class="caption">MAE and MGEH by direction. Red: overestimation. Blue: underestimation (Figure 5.12)</p>
+          </div>
+          <div class="f45">
+            <ul class="xsmall">
+              <li>Errors are spread across the network without an obvious large-scale concentration or consistent directional pattern.</li>
+              <li>Local over- and under-prediction remains. The absence of a visible pattern does not imply spatially independent residuals.</li>
+              <li>Error varies little with the number of valid years or matched sensors per edge (Figure 5.10).</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>DeepDemand: origin and destination potentials</h2>
+        <img class="fit" style="max-height:430px" src="figures/ch5_od_potentials.jpg" alt="Origin and destination potentials">
+        <p class="caption">Origin potential (left) and destination potential (right), quintiles after standardisation by LSOA area (Figure 5.22)</p>
       </section>
     </section>
 
